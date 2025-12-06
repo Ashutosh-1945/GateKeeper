@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "@/pages/public/Home";
 import Login from "@/pages/public/Login"; // 👈 Import the real Login page
+import Register from "@/pages/public/Register";
 
 // 🚧 Placeholders for pages coming next
 const Dashboard = () => (
@@ -15,12 +16,7 @@ const AdminPanel = () => (
   </div>
 );
 
-// Placeholder for Register page (we will build this next)
-const Register = () => (
-  <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
-    <h1 className="text-2xl">📝 Register Page (Coming Soon)</h1>
-  </div>
-);
+
 
 export default function App() {
   return (
