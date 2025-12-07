@@ -1,33 +1,78 @@
 import { useState } from "react";
 import { 
   Link2, Copy, ArrowRight, ShieldAlert, Zap, Loader2, 
-  Bomb, Ghost, Fingerprint, ChevronDown, Lock 
+  Bomb, Ghost, Fingerprint, ChevronDown, Lock, Key, Clock, Hash, MousePointerClick
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import Navbar from "@/components/ui/common/Navbar"; // 👈 Import Navbar
+import Navbar from "@/components/ui/common/Navbar";
+import { api } from "@/services/api";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Home() {
+  const { user } = useAuth();
   const [url, setUrl] = useState("");
   const [shortLink, setShortLink] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  
+  // Advanced options (for authenticated users)
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [customSlug, setCustomSlug] = useState("");
+  const [password, setPassword] = useState("");
+  const [expiresIn, setExpiresIn] = useState(""); // hours
+  const [maxClicks, setMaxClicks] = useState("");
 
   const handleShorten = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!url) return;
     setLoading(true);
-    // MOCK: Simulating network request for now
-    setTimeout(() => {
-      setShortLink("https://deadman.link/Xy9Zq2"); 
+    setError("");
+    
+    try {
+      // Build request data
+      const requestData: {
+        originalUrl: string;
+        customSlug?: string;
+        password?: string;
+        expiresAt?: string;
+        maxClicks?: number;
+      } = { originalUrl: url };
+      
+      // Add advanced options if set
+      if (customSlug) requestData.customSlug = customSlug;
+      if (password) requestData.password = password;
+      if (expiresIn) {
+        const hours = parseInt(expiresIn);
+        const expiryDate = new Date(Date.now() + hours * 60 * 60 * 1000);
+        requestData.expiresAt = expiryDate.toISOString();
+      }
+      if (maxClicks) requestData.maxClicks = parseInt(maxClicks);
+      
+      const data = await api.createLink(requestData);
+      setShortLink(data.shortLink);
+    } catch (err: any) {
+      setError(err.message || "Failed to create link");
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(shortLink);
     alert("Copied to clipboard!");
+  };
+
+  const resetForm = () => {
+    setShortLink("");
+    setUrl("");
+    setCustomSlug("");
+    setPassword("");
+    setExpiresIn("");
+    setMaxClicks("");
+    setShowAdvanced(false);
   };
 
   return (
@@ -63,7 +108,10 @@ export default function Home() {
           <CardHeader>
             <CardTitle className="text-slate-200 flex items-center gap-2 text-lg">
               <Zap className="h-5 w-5 text-yellow-500" />
-              Quick Shorten <span className="text-slate-500 text-sm font-normal ml-auto">(Guest Mode)</span>
+              {user ? "Agent Mode" : "Quick Shorten"} 
+              <span className="text-slate-500 text-sm font-normal ml-auto">
+                {user ? `(${user.email?.split('@')[0]})` : "(Guest Mode)"}
+              </span>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -78,6 +126,74 @@ export default function Home() {
                     onChange={(e) => setUrl(e.target.value)}
                   />
                 </div>
+                
+                {/* Advanced Options Toggle - Show only for authenticated users */}
+                {user && (
+                  <div className="space-y-3">
+                    <button 
+                      type="button"
+                      onClick={() => setShowAdvanced(!showAdvanced)}
+                      className="text-sm text-slate-400 hover:text-red-500 flex items-center gap-1 transition-colors"
+                    >
+                      <ChevronDown className={`w-4 h-4 transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
+                      {showAdvanced ? 'Hide' : 'Show'} Advanced Options
+                    </button>
+                    
+                    {showAdvanced && (
+                      <div className="space-y-3 p-3 bg-slate-950 rounded-lg border border-slate-800 animate-in fade-in duration-200">
+                        {/* Custom Slug */}
+                        <div className="relative">
+                          <Hash className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
+                          <Input 
+                            placeholder="Custom slug (e.g., my-link)"
+                            className="pl-10 bg-slate-900 border-slate-700 text-slate-100 placeholder:text-slate-600 text-sm"
+                            value={customSlug}
+                            onChange={(e) => setCustomSlug(e.target.value)}
+                          />
+                        </div>
+                        
+                        {/* Password */}
+                        <div className="relative">
+                          <Key className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
+                          <Input 
+                            type="password"
+                            placeholder="Password protection (optional)"
+                            className="pl-10 bg-slate-900 border-slate-700 text-slate-100 placeholder:text-slate-600 text-sm"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                          />
+                        </div>
+                        
+                        {/* Expiry & Max Clicks */}
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="relative">
+                            <Clock className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
+                            <Input 
+                              type="number"
+                              placeholder="Expire in (hrs)"
+                              className="pl-10 bg-slate-900 border-slate-700 text-slate-100 placeholder:text-slate-600 text-sm"
+                              value={expiresIn}
+                              onChange={(e) => setExpiresIn(e.target.value)}
+                              min="1"
+                            />
+                          </div>
+                          <div className="relative">
+                            <MousePointerClick className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
+                            <Input 
+                              type="number"
+                              placeholder="Max clicks"
+                              className="pl-10 bg-slate-900 border-slate-700 text-slate-100 placeholder:text-slate-600 text-sm"
+                              value={maxClicks}
+                              onChange={(e) => setMaxClicks(e.target.value)}
+                              min="1"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
                 <Button 
                   type="submit" 
                   className="w-full bg-red-600 hover:bg-red-700 text-white font-bold tracking-wide transition-all shadow-[0_0_10px_rgba(220,38,38,0.5)] hover:shadow-[0_0_20px_rgba(220,38,38,0.7)]"
@@ -89,6 +205,7 @@ export default function Home() {
                     "CREATE DEAD LINK"
                   )}
                 </Button>
+                {error && <p className="text-red-500 text-sm text-center">{error}</p>}
               </form>
             ) : (
               <div className="space-y-4 animate-in fade-in zoom-in duration-300">
@@ -103,7 +220,7 @@ export default function Home() {
                 <Button 
                   variant="outline" 
                   className="w-full border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
-                  onClick={() => { setShortLink(""); setUrl(""); }}
+                  onClick={resetForm}
                 >
                   Shorten Another
                 </Button>
@@ -114,9 +231,11 @@ export default function Home() {
             <span className="flex items-center gap-1">
               <Lock className="h-3 w-3" /> TLS Encryption
             </span>
-            <Link to="/login" className="text-red-500 hover:text-red-400 flex items-center gap-1 transition-colors group font-semibold">
-              Unlock Password Protection <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
-            </Link>
+            {!user && (
+              <Link to="/login" className="text-red-500 hover:text-red-400 flex items-center gap-1 transition-colors group font-semibold">
+                Unlock Password Protection <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            )}
           </CardFooter>
         </Card>
 
@@ -222,22 +341,38 @@ export default function Home() {
 
       {/* ================= FINAL CTA ================= */}
       <section className="py-20 bg-gradient-to-t from-red-950/20 to-slate-900 border-t border-slate-800 text-center px-4">
-        <h2 className="text-3xl font-bold text-white mb-6">Join the Network</h2>
-        <p className="text-slate-400 max-w-lg mx-auto mb-8">
-          Unlock advanced features like password protection, custom slugs, and click tracking analytics.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link to="/login">
-            <Button size="lg" className="w-full sm:w-auto bg-white text-slate-950 hover:bg-slate-200 font-bold">
-              Access Dashboard
-            </Button>
-          </Link>
-          <Link to="/register">
-            <Button size="lg" variant="outline" className="w-full sm:w-auto border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800">
-              Create Agent ID
-            </Button>
-          </Link>
-        </div>
+        {user ? (
+          <>
+            <h2 className="text-3xl font-bold text-white mb-6">Welcome Back, Agent</h2>
+            <p className="text-slate-400 max-w-lg mx-auto mb-8">
+              Manage your links, track analytics, and configure advanced security from your dashboard.
+            </p>
+            <Link to="/dashboard">
+              <Button size="lg" className="bg-red-600 hover:bg-red-700 text-white font-bold">
+                Go to Dashboard
+              </Button>
+            </Link>
+          </>
+        ) : (
+          <>
+            <h2 className="text-3xl font-bold text-white mb-6">Join the Network</h2>
+            <p className="text-slate-400 max-w-lg mx-auto mb-8">
+              Unlock advanced features like password protection, custom slugs, and click tracking analytics.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link to="/login">
+                <Button size="lg" className="w-full sm:w-auto bg-white text-slate-950 hover:bg-slate-200 font-bold">
+                  Access Dashboard
+                </Button>
+              </Link>
+              <Link to="/register">
+                <Button size="lg" variant="outline" className="w-full sm:w-auto border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800">
+                  Create Agent ID
+                </Button>
+              </Link>
+            </div>
+          </>
+        )}
       </section>
 
       {/* Footer */}

@@ -7,11 +7,13 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import Navbar from "@/components/ui/common/Navbar";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Register() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { register } = useAuth();
 
   const [formData, setFormData] = useState({
     username: "",
@@ -30,15 +32,21 @@ export default function Register() {
       return;
     }
 
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+
     setLoading(true);
 
-    // MOCK: Simulate Network Request
-    setTimeout(() => {
-      setLoading(false);
-      // Simulate success -> Go to dashboard
-      console.log("Mock Registration Data:", formData);
+    try {
+      await register(formData.email, formData.password);
       navigate("/dashboard");
-    }, 1500);
+    } catch (err: any) {
+      setError(err.message || "Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

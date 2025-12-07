@@ -7,25 +7,34 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Navbar from "@/components/ui/common/Navbar";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Login() {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  // Mock Login Handler
-  const handleLogin = (e: React.FormEvent, type: "user" | "admin") => {
+  // Real Login Handler
+  const handleLogin = async (e: React.FormEvent, type: "user" | "admin") => {
     e.preventDefault();
     setLoading(true);
+    setError("");
 
-    // Simulate API Call
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      await login(email, password);
       if (type === "admin") {
-        navigate("/admin"); // Redirect to Admin Panel
+        navigate("/admin");
       } else {
-        navigate("/dashboard"); // Redirect to User Dashboard
+        navigate("/dashboard");
       }
-    }, 1500);
+    } catch (err: any) {
+      setError(err.message || "Login failed. Check your credentials.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -72,11 +81,12 @@ export default function Login() {
               {/* === USER LOGIN FORM === */}
               <TabsContent value="user">
                 <form onSubmit={(e) => handleLogin(e, "user")} className="space-y-4">
+                  {error && <p className="text-red-500 text-sm text-center bg-red-900/20 p-2 rounded">{error}</p>}
                   <div className="space-y-2">
                     <Label htmlFor="email-user" className="text-slate-300">Agent Email</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
-                      <Input id="email-user" placeholder="agent@gatekeeper.net" className="pl-10 bg-slate-950 border-slate-700 text-white placeholder:text-slate-600 focus-visible:ring-slate-500" required />
+                      <Input id="email-user" placeholder="agent@gatekeeper.net" className="pl-10 bg-slate-950 border-slate-700 text-white placeholder:text-slate-600 focus-visible:ring-slate-500" required value={email} onChange={(e) => setEmail(e.target.value)} />
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -86,7 +96,7 @@ export default function Login() {
                     </div>
                     <div className="relative">
                       <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
-                      <Input id="password-user" type="password" placeholder="••••••••" className="pl-10 bg-slate-950 border-slate-700 text-white placeholder:text-slate-600 focus-visible:ring-slate-500" required />
+                      <Input id="password-user" type="password" placeholder="••••••••" className="pl-10 bg-slate-950 border-slate-700 text-white placeholder:text-slate-600 focus-visible:ring-slate-500" required value={password} onChange={(e) => setPassword(e.target.value)} />
                     </div>
                   </div>
                   <Button type="submit" className="w-full bg-slate-100 text-slate-900 hover:bg-slate-200 font-bold" disabled={loading}>
@@ -98,6 +108,7 @@ export default function Login() {
               {/* === ADMIN LOGIN FORM === */}
               <TabsContent value="admin">
                 <form onSubmit={(e) => handleLogin(e, "admin")} className="space-y-4">
+                  {error && <p className="text-red-500 text-sm text-center bg-red-900/20 p-2 rounded">{error}</p>}
                   <div className="p-3 bg-red-950/20 border border-red-900/30 rounded-md mb-4 flex items-start gap-3">
                     <ShieldAlert className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
                     <p className="text-xs text-red-400">
@@ -109,14 +120,14 @@ export default function Login() {
                     <Label htmlFor="email-admin" className="text-red-100">Command ID</Label>
                     <div className="relative">
                       <ShieldCheck className="absolute left-3 top-3 h-4 w-4 text-red-500" />
-                      <Input id="email-admin" placeholder="admin@gatekeeper.net" className="pl-10 bg-slate-950 border-red-900/50 text-white placeholder:text-slate-600 focus-visible:ring-red-600" required />
+                      <Input id="email-admin" placeholder="admin@gatekeeper.net" className="pl-10 bg-slate-950 border-red-900/50 text-white placeholder:text-slate-600 focus-visible:ring-red-600" required value={email} onChange={(e) => setEmail(e.target.value)} />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="password-admin" className="text-red-100">Security Token</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-3 h-4 w-4 text-red-500" />
-                      <Input id="password-admin" type="password" placeholder="••••••••" className="pl-10 bg-slate-950 border-red-900/50 text-white placeholder:text-slate-600 focus-visible:ring-red-600" required />
+                      <Input id="password-admin" type="password" placeholder="••••••••" className="pl-10 bg-slate-950 border-red-900/50 text-white placeholder:text-slate-600 focus-visible:ring-red-600" required value={password} onChange={(e) => setPassword(e.target.value)} />
                     </div>
                   </div>
                   <Button type="submit" className="w-full bg-red-600 text-white hover:bg-red-700 font-bold shadow-[0_0_10px_rgba(220,38,38,0.5)]" disabled={loading}>
