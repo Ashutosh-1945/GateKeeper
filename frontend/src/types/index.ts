@@ -1,9 +1,7 @@
-// src/types/index.ts
-
 export type UserRole = 'user' | 'admin';
 
 export interface IUser {
-  _id: string;
+  _id: string; // This corresponds to Firebase UID
   username: string;
   email: string;
   role: UserRole;
@@ -11,22 +9,30 @@ export interface IUser {
 }
 
 export interface ILink {
-  _id: string;
+  _id: string; // The slug (e.g., "xy9zK1")
   originalUrl: string;
-  shortSlug: string;
-  userId?: string | null;
+  ownerId: string; // or userId, consistent with backend
   
-  // Security Features
-  hasPassword?: boolean;
-  expiresAt?: string;
+  // Stats
   clickCount: number;
-  maxClicks?: number; // 0 or null means unlimited
   
-  // Admin Features
-  threatLevel: 'safe' | 'suspicious' | 'unsafe';
-  isActive: boolean;
+  // Security Settings (Matches Backend Schema)
+  security: {
+    type: 'none' | 'password' | 'domain_lock';
+    password?: string | null;      // Only if type='password'
+    allowedDomain?: string | null; // Only if type='domain_lock'
+    expiresAt?: string | null;
+    maxClicks?: number | null;
+  };
+
+  // Admin / Analysis
+  threatLevel?: 'safe' | 'suspicious' | 'unsafe';
   
-  createdAt: string;
+  // Timestamps
+  createdAt: {
+    _seconds: number;
+    _nanoseconds: number;
+  } | string; // Firestore timestamp or ISO string depending on how you fetch
 }
 
 export interface IAuthResponse {

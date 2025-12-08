@@ -10,6 +10,11 @@ router.use(verifyToken);
 router.post('/link', linkController.createLink);
 router.get('/link/:slug', linkController.checkLink);
 router.post('/link/:slug/unlock', linkController.unlockLink);
+
+// 👇 NEW: Add the Google Unlock route here
+router.post('/link/:slug/unlock-google', linkController.unlockWithGoogle);
+router.post('/link/scan', linkController.scanUrl);
+
 router.delete('/link/:slug', requireAuth, linkController.deleteLink);
 router.get('/dashboard', requireAuth, linkController.getUserLinks);
 

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { 
   Link2, Copy, ArrowRight, ShieldAlert, Zap, Loader2, 
-  Bomb, Ghost, Fingerprint, ChevronDown, Lock, Key, Clock, Hash, MousePointerClick
+  Bomb, Ghost, Fingerprint, ChevronDown, Lock, Key, Clock, Hash, MousePointerClick, Building2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,7 @@ export default function Home() {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [customSlug, setCustomSlug] = useState("");
   const [password, setPassword] = useState("");
+  const [allowedDomain, setAllowedDomain] = useState(""); // 👈 New State
   const [expiresIn, setExpiresIn] = useState(""); // hours
   const [maxClicks, setMaxClicks] = useState("");
 
@@ -37,13 +38,24 @@ export default function Home() {
         originalUrl: string;
         customSlug?: string;
         password?: string;
+        allowedDomain?: string; // 👈 Added Type
+        securityType?: string;  // 👈 Added Type
         expiresAt?: string;
         maxClicks?: number;
       } = { originalUrl: url };
       
       // Add advanced options if set
       if (customSlug) requestData.customSlug = customSlug;
-      if (password) requestData.password = password;
+      
+      // Security Logic: Domain Lock takes priority, or Password
+      if (allowedDomain) {
+        requestData.allowedDomain = allowedDomain;
+        requestData.securityType = 'domain_lock';
+      } else if (password) {
+        requestData.password = password;
+        requestData.securityType = 'password';
+      }
+
       if (expiresIn) {
         const hours = parseInt(expiresIn);
         const expiryDate = new Date(Date.now() + hours * 60 * 60 * 1000);
@@ -70,6 +82,7 @@ export default function Home() {
     setUrl("");
     setCustomSlug("");
     setPassword("");
+    setAllowedDomain(""); // 👈 Reset this too
     setExpiresIn("");
     setMaxClicks("");
     setShowAdvanced(false);
@@ -77,12 +90,10 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-red-900 selection:text-white">
-      
-      {/* ================= HEADER ================= */}
+
       <Navbar /> 
 
       {/* ================= HERO SECTION ================= */}
-      {/* Added pt-32 to account for the fixed header */}
       <section className="flex-1 flex flex-col items-center justify-center p-4 pt-32 pb-20 relative overflow-hidden">
         
         {/* Background Ambient Glow */}
@@ -161,6 +172,19 @@ export default function Home() {
                             className="pl-10 bg-slate-900 border-slate-700 text-slate-100 placeholder:text-slate-600 text-sm"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
+                            disabled={!!allowedDomain} // Disable if using Domain Lock
+                          />
+                        </div>
+
+                        {/* 👇 NEW: Domain Lock Input */}
+                        <div className="relative">
+                          <Building2 className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
+                          <Input 
+                            placeholder="Limit to Domain (e.g. mnnit.ac.in)"
+                            className="pl-10 bg-slate-900 border-slate-700 text-slate-100 placeholder:text-slate-600 text-sm"
+                            value={allowedDomain}
+                            onChange={(e) => setAllowedDomain(e.target.value)}
+                            disabled={!!password} // Disable if using Password
                           />
                         </div>
                         

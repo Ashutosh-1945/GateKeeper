@@ -42,7 +42,7 @@ export default function App() {
               <AdminPanel />
             </ProtectedRoute>
           } />
-          
+
           {/* Fallback for 404 */}
           <Route path="*" element={
             <div className="min-h-screen bg-slate-950 text-red-500 flex items-center justify-center">
