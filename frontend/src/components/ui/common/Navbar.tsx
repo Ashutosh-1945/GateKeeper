@@ -1,10 +1,10 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ShieldCheck, LogOut, LayoutDashboard } from "lucide-react"; 
+import { ShieldCheck, LogOut, LayoutDashboard, ShieldAlert } from "lucide-react"; 
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 
 export default function Navbar() {
-  const { user, loading, logout } = useAuth();
+  const { user, loading, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -35,6 +35,7 @@ export default function Navbar() {
             <>
               <span className="text-slate-400 text-sm hidden sm:block">
                 Hello, <span className="text-red-500">{user.email?.split('@')[0]}</span>
+                {isAdmin && <span className="ml-1 text-amber-500">(Admin)</span>}
               </span>
               <Link to="/dashboard">
                 <Button variant="ghost" className="text-slate-300 hover:text-white hover:bg-slate-800">
@@ -42,6 +43,14 @@ export default function Navbar() {
                   Dashboard
                 </Button>
               </Link>
+              {isAdmin && (
+                <Link to="/admin">
+                  <Button variant="ghost" className="text-amber-500 hover:text-amber-400 hover:bg-amber-900/20">
+                    <ShieldAlert className="w-4 h-4 mr-2" />
+                    Admin
+                  </Button>
+                </Link>
+              )}
               <Button 
                 onClick={handleLogout}
                 variant="outline" 

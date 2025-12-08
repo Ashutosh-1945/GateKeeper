@@ -10,13 +10,22 @@ import {
 import type { User } from "firebase/auth";
 import { auth } from "../firebase";
 
+// Extended user type with role
+interface AppUser {
+  firebaseUser: User;
+  role: 'user' | 'admin';
+  email: string | null;
+  uid: string;
+}
+
 interface AuthContextType {
-  user: User | null;
+  user: AppUser | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   getToken: () => Promise<string | null>;
+  isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -33,13 +42,32 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+// Admin email list (you can also store this in Firestore)
+const ADMIN_EMAILS = [
+  'admin@gatekeeper.com',
+  'ashutosh1945@gmail.com',
+  'mujjawal774@gmail.com', // Your admin email
+];
+
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        // Determine role based on email or custom claims
+        const role = ADMIN_EMAILS.includes(firebaseUser.email || '') ? 'admin' : 'user';
+        
+        setUser({
+          firebaseUser,
+          role,
+          email: firebaseUser.email,
+          uid: firebaseUser.uid,
+        });
+      } else {
+        setUser(null);
+      }
       setLoading(false);
     });
     return () => unsubscribe();
@@ -58,8 +86,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const getToken = async (): Promise<string | null> => {
-    if (user) {
-      return await getIdToken(user);
+    if (user?.firebaseUser) {
+      return await getIdToken(user.firebaseUser);
     }
     return null;
   };
@@ -70,7 +98,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     login,
     register,
     logout,
-    getToken
+    getToken,
+    isAdmin: user?.role === 'admin',
   };
 
   return (

@@ -94,5 +94,138 @@ export const api = {
     }
     return res.json();
   },
+
+  // ============ ADMIN ENDPOINTS ============
+
+  // Get all users (Admin only)
+  getAllUsers: async () => {
+    const headers = await getAuthHeader();
+    const res = await fetch(`${API_URL}/admin/users`, {
+      headers: {
+        ...headers,
+      } as HeadersInit,
+    });
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.error || 'Failed to fetch users');
+    }
+    return res.json();
+  },
+
+  // Get all links (Admin only)
+  getAllLinks: async () => {
+    const headers = await getAuthHeader();
+    const res = await fetch(`${API_URL}/admin/links`, {
+      headers: {
+        ...headers,
+      } as HeadersInit,
+    });
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.error || 'Failed to fetch links');
+    }
+    return res.json();
+  },
+
+  // Delete user (Admin only)
+  deleteUser: async (uid: string) => {
+    const headers = await getAuthHeader();
+    const res = await fetch(`${API_URL}/admin/users/${uid}`, {
+      method: 'DELETE',
+      headers: {
+        ...headers,
+      } as HeadersInit,
+    });
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.error || 'Failed to delete user');
+    }
+    return res.json();
+  },
+
+  // Admin delete any link (Admin only)
+  adminDeleteLink: async (slug: string) => {
+    const headers = await getAuthHeader();
+    const res = await fetch(`${API_URL}/admin/links/${slug}`, {
+      method: 'DELETE',
+      headers: {
+        ...headers,
+      } as HeadersInit,
+    });
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.error || 'Failed to delete link');
+    }
+    return res.json();
+  },
+
+  // Get admin stats
+  getAdminStats: async () => {
+    const headers = await getAuthHeader();
+    const res = await fetch(`${API_URL}/admin/stats`, {
+      headers: {
+        ...headers,
+      } as HeadersInit,
+    });
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.error || 'Failed to fetch stats');
+    }
+    return res.json();
+  },
+
+  // Get user details with all their links (Admin only)
+  getAdminUserDetails: async (userId: string) => {
+    const headers = await getAuthHeader();
+    const res = await fetch(`${API_URL}/admin/users/${userId}/details`, {
+      headers: {
+        ...headers,
+      } as HeadersInit,
+    });
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.error || 'Failed to fetch user details');
+    }
+    return res.json();
+  },
+
+  // Get single link details (Admin only)
+  getAdminLinkDetails: async (linkId: string) => {
+    const headers = await getAuthHeader();
+    const res = await fetch(`${API_URL}/admin/links/${linkId}/details`, {
+      headers: {
+        ...headers,
+      } as HeadersInit,
+    });
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.error || 'Failed to fetch link details');
+    }
+    return res.json();
+  },
+
+  // Update link (Admin only)
+  updateAdminLink: async (linkId: string, data: {
+    targetUrl?: string;
+    ttlMinutes?: number | null;
+    maxClicks?: number | null;
+    password?: string | null;
+    allowedDomain?: string | null;
+  }) => {
+    const headers = await getAuthHeader();
+    const res = await fetch(`${API_URL}/admin/links/${linkId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...headers,
+      } as HeadersInit,
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.error || 'Failed to update link');
+    }
+    return res.json();
+  },
 };
 

@@ -1,21 +1,31 @@
 const express = require('express');
 const router = express.Router();
 const linkController = require('../controllers/linkController');
+const adminController = require('../controllers/adminController');
 const { verifyToken, requireAuth } = require('../controllers/authController');
 
 // Middleware to check token on all routes (populates req.user if valid)
 router.use(verifyToken);
 
-// Routes
+// ============ PUBLIC ROUTES ============
 router.post('/link', linkController.createLink);
 router.get('/link/:slug', linkController.checkLink);
 router.post('/link/:slug/unlock', linkController.unlockLink);
-
-// 👇 NEW: Add the Google Unlock route here
 router.post('/link/:slug/unlock-google', linkController.unlockWithGoogle);
 router.post('/link/scan', linkController.scanUrl);
 
+// ============ AUTHENTICATED USER ROUTES ============
 router.delete('/link/:slug', requireAuth, linkController.deleteLink);
 router.get('/dashboard', requireAuth, linkController.getUserLinks);
+
+// ============ ADMIN ROUTES ============
+router.get('/admin/users', requireAuth, adminController.requireAdmin, adminController.getAllUsers);
+router.get('/admin/users/:uid/details', requireAuth, adminController.requireAdmin, adminController.getUserDetails);
+router.get('/admin/links', requireAuth, adminController.requireAdmin, adminController.getAllLinks);
+router.get('/admin/links/:slug/details', requireAuth, adminController.requireAdmin, adminController.getLinkDetails);
+router.get('/admin/stats', requireAuth, adminController.requireAdmin, adminController.getAdminStats);
+router.delete('/admin/users/:uid', requireAuth, adminController.requireAdmin, adminController.deleteUser);
+router.delete('/admin/links/:slug', requireAuth, adminController.requireAdmin, adminController.adminDeleteLink);
+router.put('/admin/links/:slug', requireAuth, adminController.requireAdmin, adminController.updateLink);
 
 module.exports = router;

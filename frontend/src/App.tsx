@@ -4,15 +4,11 @@ import Login from "@/pages/public/Login";
 import Register from "@/pages/public/Register";
 import Redirect from "@/pages/public/Redirect";
 import UserDashboard from "@/pages/dashboard/UserDashboard";
+import AdminDashboard from "@/pages/admin/AdminDashboard";
+import AdminUserDetails from "@/pages/admin/AdminUserDetails";
+import AdminLinkEditor from "@/pages/admin/AdminLinkEditor";
 import { AuthProvider } from "@/context/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
-
-// 🚧 Placeholder for admin panel
-const AdminPanel = () => (
-  <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
-    <h1 className="text-2xl">🛡️ Admin Panel (Coming Soon)</h1>
-  </div>
-);
 
 
 
@@ -36,10 +32,24 @@ export default function App() {
             </ProtectedRoute>
           } />
           
-          {/* Layer 3: Admin Panel (Protected) */}
+          {/* Layer 3: Admin Panel (Protected + Admin Only) */}
           <Route path="/admin" element={
-            <ProtectedRoute>
-              <AdminPanel />
+            <ProtectedRoute requireAdmin={true}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          } />
+          
+          {/* Admin User Details */}
+          <Route path="/admin/user/:id" element={
+            <ProtectedRoute requireAdmin={true}>
+              <AdminUserDetails />
+            </ProtectedRoute>
+          } />
+          
+          {/* Admin Link Editor */}
+          <Route path="/admin/link/:id" element={
+            <ProtectedRoute requireAdmin={true}>
+              <AdminLinkEditor />
             </ProtectedRoute>
           } />
 
