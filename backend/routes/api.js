@@ -12,9 +12,9 @@ router.post('/link', linkController.createLink);
 router.get('/link/:slug', linkController.checkLink);
 router.post('/link/:slug/unlock', linkController.unlockLink);
 router.post('/link/:slug/unlock-google', linkController.unlockWithGoogle);
-router.post('/link/scan', linkController.scanUrl);
 
 // ============ AUTHENTICATED USER ROUTES ============
+router.post('/link/scan', requireAuth, linkController.scanUrl);
 router.delete('/link/:slug', requireAuth, linkController.deleteLink);
 router.get('/dashboard', requireAuth, linkController.getUserLinks);
 
@@ -27,5 +27,6 @@ router.get('/admin/stats', requireAuth, adminController.requireAdmin, adminContr
 router.delete('/admin/users/:uid', requireAuth, adminController.requireAdmin, adminController.deleteUser);
 router.delete('/admin/links/:slug', requireAuth, adminController.requireAdmin, adminController.adminDeleteLink);
 router.put('/admin/links/:slug', requireAuth, adminController.requireAdmin, adminController.updateLink);
+router.get('/admin/logs', requireAuth, adminController.requireAdmin, adminController.getSystemLogs);
 
 module.exports = router;

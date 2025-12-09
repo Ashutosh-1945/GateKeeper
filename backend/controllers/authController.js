@@ -27,6 +27,7 @@ const verifyToken = async (req, res, next) => {
 
 const requireAuth = (req, res, next) => {
   if (!req.user) {
+    console.log('Unauthorized access attempt.');
     return res.status(401).json({ error: 'Unauthorized' });
   }
   next();

@@ -1,11 +1,12 @@
 const { db } = require('../config/firebase');
 const admin = require('firebase-admin');
+const logEvent = require('../utils/logger');
 
-// Admin email list - should match frontend
+// Admin email list
 const ADMIN_EMAILS = [
   'admin@gatekeeper.com',
   'ashutosh1945@gmail.com',
-  'mujjawal774@gmail.com', // Your admin email
+  'mujjawal774@gmail.com',
 ];
 
 // Middleware to check if user is admin
@@ -168,6 +169,14 @@ const deleteUser = async (req, res) => {
     // Delete user from Firebase Auth
     await admin.auth().deleteUser(uid);
 
+    logEvent(
+      'ADMIN_DELETE_USER', 
+      req.user, // The Admin performing the action
+      uid,      // The Target User ID
+      `Admin deleted user ${uid} and removed ${linksSnapshot.size} links.`, 
+      req
+    );
+
     res.json({ success: true, message: 'User and their links deleted' });
   } catch (error) {
     console.error('Delete user error:', error);
@@ -182,11 +191,21 @@ const adminDeleteLink = async (req, res) => {
     const docRef = db.collection('links').doc(slug);
     const doc = await docRef.get();
 
+    const linkData = doc.data();
+
     if (!doc.exists) {
       return res.status(404).json({ error: 'Link not found' });
     }
-
     await docRef.delete();
+
+
+    logEvent(
+      'ADMIN_DELETE_LINK', 
+      req.user, 
+      slug, 
+      `Admin force-deleted link to ${linkData.originalUrl} (Owner: ${linkData.ownerId})`, 
+      req
+    );
     res.json({ success: true, message: 'Link deleted by admin' });
   } catch (error) {
     console.error('Admin delete link error:', error);
@@ -363,6 +382,14 @@ const updateLink = async (req, res) => {
 
     await docRef.update(updates);
 
+    logEvent(
+      'ADMIN_UPDATE_LINK', 
+      req.user, 
+      slug, 
+      `Admin modified link settings (Target: ${targetUrl || 'unchanged'}, Security: ${security.type})`, 
+      req
+    );
+
     res.json({ 
       success: true, 
       message: 'Link updated successfully',
@@ -378,6 +405,32 @@ const updateLink = async (req, res) => {
   }
 };
 
+const getSystemLogs = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 50;
+
+    const snapshot = await db.collection('system_logs')
+      .orderBy('timestamp', 'desc')
+      .limit(limit)
+      .get();
+
+    const logs = snapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        _id: doc.id,
+        ...data,
+        // Convert Timestamp to readable string
+        timestamp: data.timestamp ? data.timestamp.toDate().toISOString() : null
+      };
+    });
+
+    res.json(logs);
+  } catch (error) {
+    console.error('Get system logs error:', error);
+    res.status(500).json({ error: error.message || 'Internal Server Error' });
+  }
+};
+
 module.exports = {
   requireAdmin,
   getAllUsers,
@@ -388,4 +441,5 @@ module.exports = {
   getUserDetails,
   getLinkDetails,
   updateLink,
+  getSystemLogs
 };

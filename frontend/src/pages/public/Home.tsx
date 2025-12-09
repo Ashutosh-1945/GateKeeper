@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { 
   Link2, Copy, ArrowRight, ShieldAlert, Zap, Loader2, 
-  Bomb, Ghost, Fingerprint, ChevronDown, Lock, Key, Clock, Hash, MousePointerClick, Building2
+  Bomb, Ghost, Fingerprint, ChevronDown, Lock, Key, Clock, Hash, MousePointerClick, Building2,
+  ShieldCheck, ShieldQuestion, ScanEye 
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,13 +19,17 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   
-  // Advanced options (for authenticated users)
+  // Advanced options
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [customSlug, setCustomSlug] = useState("");
   const [password, setPassword] = useState("");
-  const [allowedDomain, setAllowedDomain] = useState(""); // 👈 New State
-  const [expiresIn, setExpiresIn] = useState(""); // hours
+  const [allowedDomain, setAllowedDomain] = useState(""); 
+  const [expiresIn, setExpiresIn] = useState(""); 
   const [maxClicks, setMaxClicks] = useState("");
+
+  // 👇 New State for AI Scanning
+  const [scanning, setScanning] = useState(false);
+  const [scanResult, setScanResult] = useState<{status: string, reason: string} | null>(null);
 
   const handleShorten = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,21 +38,10 @@ export default function Home() {
     setError("");
     
     try {
-      // Build request data
-      const requestData: {
-        originalUrl: string;
-        customSlug?: string;
-        password?: string;
-        allowedDomain?: string; // 👈 Added Type
-        securityType?: string;  // 👈 Added Type
-        expiresAt?: string;
-        maxClicks?: number;
-      } = { originalUrl: url };
+      const requestData: any = { originalUrl: url };
       
-      // Add advanced options if set
       if (customSlug) requestData.customSlug = customSlug;
       
-      // Security Logic: Domain Lock takes priority, or Password
       if (allowedDomain) {
         requestData.allowedDomain = allowedDomain;
         requestData.securityType = 'domain_lock';
@@ -72,6 +66,29 @@ export default function Home() {
     }
   };
 
+
+  const handleScan = async () => {
+    if (!url) return;
+    setScanning(true);
+    setScanResult(null); // Clear previous results
+
+    try {
+      const requestData = { url };
+
+      // API Call with 1.5s Animation Delay
+      const [data] = await Promise.all([
+        api.scanUrl(requestData), // 👈 Now matches the 'api.createLink' style
+        new Promise(resolve => setTimeout(resolve, 1500))
+      ]);
+
+      setScanResult(data);
+    } catch (err: any) {
+      setScanResult({ status: 'unknown', reason: err.message || "Scan failed." });
+    } finally {
+      setScanning(false);
+    }
+  };
+
   const copyToClipboard = () => {
     navigator.clipboard.writeText(shortLink);
     alert("Copied to clipboard!");
@@ -82,10 +99,13 @@ export default function Home() {
     setUrl("");
     setCustomSlug("");
     setPassword("");
-    setAllowedDomain(""); // 👈 Reset this too
+    setAllowedDomain("");
     setExpiresIn("");
     setMaxClicks("");
     setShowAdvanced(false);
+    // Reset Scan State
+    setScanning(false);
+    setScanResult(null);
   };
 
   return (
@@ -138,7 +158,7 @@ export default function Home() {
                   />
                 </div>
                 
-                {/* Advanced Options Toggle - Show only for authenticated users */}
+                {/* Advanced Options Toggle */}
                 {user && (
                   <div className="space-y-3">
                     <button 
@@ -152,7 +172,6 @@ export default function Home() {
                     
                     {showAdvanced && (
                       <div className="space-y-3 p-3 bg-slate-950 rounded-lg border border-slate-800 animate-in fade-in duration-200">
-                        {/* Custom Slug */}
                         <div className="relative">
                           <Hash className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
                           <Input 
@@ -163,20 +182,18 @@ export default function Home() {
                           />
                         </div>
                         
-                        {/* Password */}
                         <div className="relative">
                           <Key className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
                           <Input 
                             type="password"
-                            placeholder="Password protection (optional)"
+                            placeholder="Password protection"
                             className="pl-10 bg-slate-900 border-slate-700 text-slate-100 placeholder:text-slate-600 text-sm"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            disabled={!!allowedDomain} // Disable if using Domain Lock
+                            disabled={!!allowedDomain}
                           />
                         </div>
 
-                        {/* 👇 NEW: Domain Lock Input */}
                         <div className="relative">
                           <Building2 className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
                           <Input 
@@ -184,17 +201,16 @@ export default function Home() {
                             className="pl-10 bg-slate-900 border-slate-700 text-slate-100 placeholder:text-slate-600 text-sm"
                             value={allowedDomain}
                             onChange={(e) => setAllowedDomain(e.target.value)}
-                            disabled={!!password} // Disable if using Password
+                            disabled={!!password}
                           />
                         </div>
                         
-                        {/* Expiry & Max Clicks */}
                         <div className="grid grid-cols-2 gap-2">
                           <div className="relative">
                             <Clock className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
                             <Input 
                               type="number"
-                              placeholder="Expire in (hrs)"
+                              placeholder="Expire (hrs)"
                               className="pl-10 bg-slate-900 border-slate-700 text-slate-100 placeholder:text-slate-600 text-sm"
                               value={expiresIn}
                               onChange={(e) => setExpiresIn(e.target.value)}
@@ -232,6 +248,7 @@ export default function Home() {
                 {error && <p className="text-red-500 text-sm text-center">{error}</p>}
               </form>
             ) : (
+              // ============ SUCCESS VIEW ============
               <div className="space-y-4 animate-in fade-in zoom-in duration-300">
                 <div className="p-4 bg-slate-950 border border-green-900/50 rounded-lg flex items-center justify-between group">
                   <span className="text-green-500 font-mono truncate mr-2 select-all group-hover:text-green-400 transition-colors">
@@ -241,6 +258,58 @@ export default function Home() {
                     <Copy className="h-4 w-4" />
                   </Button>
                 </div>
+
+                {/* 👇 AI SCAN SECTION (Only for Logged-In Users) */}
+                {user && (
+                  <div className="pt-2">
+                    {/* 1. Initial State: Show Button */}
+                    {!scanning && !scanResult && (
+                      <Button 
+                        onClick={handleScan}
+                        className="w-full bg-blue-900/20 text-blue-400 border border-blue-900/50 hover:bg-blue-900/40 hover:text-white transition-all"
+                      >
+                        <ShieldQuestion className="mr-2 h-4 w-4" /> Verify Destination Safety (AI)
+                      </Button>
+                    )}
+
+                    {/* 2. Loading State: Show Animation */}
+                    {scanning && (
+                      <div className="flex flex-col items-center justify-center p-4 bg-slate-950 border border-blue-900/30 rounded-lg">
+                         <div className="relative inline-block mb-2">
+                           {/* Radar Ring */}
+                           <div className="w-8 h-8 border-2 border-blue-500/30 rounded-full"></div>
+                           <div className="absolute top-0 left-0 w-8 h-8 border-2 border-t-blue-500 border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+                           <ScanEye className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 text-blue-500" />
+                         </div>
+                         <p className="text-xs text-blue-400 animate-pulse font-mono">SCANNING TARGET...</p>
+                      </div>
+                    )}
+
+                    {/* 3. Result State: Show Verdict */}
+                    {scanResult && (
+                      <div className={`p-3 rounded-md border text-sm flex items-start gap-3 animate-in zoom-in-95 ${
+                        scanResult.status === 'safe' ? 'bg-green-900/20 border-green-900/50 text-green-400' :
+                        scanResult.status === 'unsafe' ? 'bg-red-900/20 border-red-900/50 text-red-400' :
+                        'bg-yellow-900/20 border-yellow-900/50 text-yellow-400'
+                      }`}>
+                        {scanResult.status === 'safe' && <ShieldCheck className="w-5 h-5 shrink-0" />}
+                        {scanResult.status === 'unsafe' && <ShieldAlert className="w-5 h-5 shrink-0" />}
+                        {scanResult.status === 'suspicious' && <ShieldAlert className="w-5 h-5 shrink-0" />}
+                        {scanResult.status === 'unknown' && <ShieldQuestion className="w-5 h-5 shrink-0" />}
+                        
+                        <div>
+                          <p className="font-bold uppercase tracking-wide text-xs mb-1">
+                            VERDICT: {scanResult.status}
+                          </p>
+                          <p className="text-xs opacity-90 leading-relaxed">
+                            {scanResult.reason}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <Button 
                   variant="outline" 
                   className="w-full border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
@@ -278,7 +347,6 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {/* Feature 1 */}
             <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 hover:border-red-900/50 transition-all hover:-translate-y-1 group">
               <div className="w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center mb-4 group-hover:bg-red-900/20 transition-colors">
                 <Bomb className="w-6 h-6 text-slate-300 group-hover:text-red-500" />
@@ -290,7 +358,6 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Feature 2 */}
             <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 hover:border-red-900/50 transition-all hover:-translate-y-1 group">
               <div className="w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center mb-4 group-hover:bg-red-900/20 transition-colors">
                 <Ghost className="w-6 h-6 text-slate-300 group-hover:text-red-500" />
@@ -302,7 +369,6 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Feature 3 */}
             <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 hover:border-red-900/50 transition-all hover:-translate-y-1 group">
               <div className="w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center mb-4 group-hover:bg-red-900/20 transition-colors">
                 <Fingerprint className="w-6 h-6 text-slate-300 group-hover:text-red-500" />
@@ -317,11 +383,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ================= MISSION PROTOCOL (HOW IT WORKS) ================= */}
+      {/* ================= MISSION PROTOCOL ================= */}
       <section className="py-24 bg-slate-950 relative overflow-hidden">
-        {/* Background Grid Pattern */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20" />
-        
         <div className="max-w-4xl mx-auto px-6 relative z-10">
           <div className="text-center mb-16">
             <span className="text-red-500 font-mono text-sm tracking-widest uppercase">Protocol Alpha</span>
@@ -329,7 +393,6 @@ export default function Home() {
           </div>
 
           <div className="space-y-8">
-            {/* Step 1 */}
             <div className="flex items-start gap-4 md:gap-8">
               <div className="flex-none w-8 h-8 md:w-12 md:h-12 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 font-bold">1</div>
               <div>
@@ -337,10 +400,7 @@ export default function Home() {
                 <p className="text-slate-400 mt-1">Paste your URL. Our system generates a unique, encrypted slug instantly.</p>
               </div>
             </div>
-             {/* Connector Line */}
              <div className="w-0.5 h-8 bg-slate-800 ml-4 md:ml-6 my-2"></div>
-
-            {/* Step 2 */}
             <div className="flex items-start gap-4 md:gap-8">
               <div className="flex-none w-8 h-8 md:w-12 md:h-12 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 font-bold">2</div>
               <div>
@@ -348,10 +408,7 @@ export default function Home() {
                 <p className="text-slate-400 mt-1">Configure optional expiration triggers. (Login required for password protection).</p>
               </div>
             </div>
-            {/* Connector Line */}
             <div className="w-0.5 h-8 bg-slate-800 ml-4 md:ml-6 my-2"></div>
-
-            {/* Step 3 */}
             <div className="flex items-start gap-4 md:gap-8">
               <div className="flex-none w-8 h-8 md:w-12 md:h-12 rounded-full bg-red-900/30 border border-red-900 text-red-500 flex items-center justify-center font-bold">3</div>
               <div>

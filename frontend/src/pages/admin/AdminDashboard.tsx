@@ -1,433 +1,352 @@
 import { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
-  Users,
-  Link2,
-  Trash2,
-  RefreshCw,
-  Loader2,
-  ShieldAlert,
-  Eye,
-  Calendar,
-  ExternalLink,
-  Search,
-  AlertTriangle,
-  Edit,
+  Users, Link2, Trash2, RefreshCw, Loader2, ShieldAlert, Eye, 
+  Search, AlertTriangle, BarChart3, ScrollText, LayoutDashboard, 
+  Menu, X, ExternalLink, Edit
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import Navbar from "@/components/ui/common/Navbar";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/services/api";
 
-interface UserData {
-  uid: string;
-  email: string;
-  displayName?: string;
-  createdAt: any;
-  linksCount?: number;
-}
-
-interface LinkData {
-  _id: string;
-  originalUrl: string;
-  ownerId: string;
-  ownerEmail?: string;
-  clickCount: number;
-  createdAt: any;
-  security: {
-    password?: boolean;
-    expiresAt?: string;
-    maxClicks?: number;
-  };
-}
-
-interface Stats {
-  totalUsers: number;
-  totalLinks: number;
-  totalClicks: number;
-  activeLinks: number;
-}
+// --- Types ---
+interface UserData { uid: string; email: string; displayName?: string; createdAt: any; linksCount?: number; }
+interface LinkData { _id: string; originalUrl: string; ownerId: string; ownerEmail?: string; clickCount: number; createdAt: any; }
+interface LogEntry { _id: string; action: string; performerEmail: string; details: string; timestamp: string; metadata?: { ip: string }; }
+interface Stats { totalUsers: number; totalLinks: number; totalClicks: number; activeLinks: number; }
 
 export default function AdminDashboard() {
   const { user, loading: authLoading, isAdmin } = useAuth();
   const navigate = useNavigate();
   
+  // 1. VIEW STATE
+  const [activeView, setActiveView] = useState<'overview' | 'users' | 'links' | 'logs' | 'analytics'>('overview');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [loading, setLoading] = useState(false);
+  
+  // 2. DATA STATE
+  const [stats, setStats] = useState<Stats>({ totalUsers: 0, totalLinks: 0, totalClicks: 0, activeLinks: 0 });
   const [users, setUsers] = useState<UserData[]>([]);
   const [links, setLinks] = useState<LinkData[]>([]);
-  const [stats, setStats] = useState<Stats>({ totalUsers: 0, totalLinks: 0, totalClicks: 0, activeLinks: 0 });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [activeTab, setActiveTab] = useState<'users' | 'links'>('users');
+  const [logs, setLogs] = useState<LogEntry[]>([]);
+  
+  // 3. FILTER STATE
   const [searchTerm, setSearchTerm] = useState("");
 
+  // Auth Check
   useEffect(() => {
     if (!authLoading && (!user || !isAdmin)) {
       navigate("/dashboard");
     }
   }, [user, authLoading, isAdmin, navigate]);
 
+  // Initial Data Fetch
   useEffect(() => {
-    if (user && isAdmin) {
-      fetchData();
-    }
+    if (user && isAdmin) fetchStats();
   }, [user, isAdmin]);
 
-  const fetchData = async () => {
+  // Lazy Fetching based on View
+  useEffect(() => {
+    if (activeView === 'users' && users.length === 0) fetchUsers();
+    if (activeView === 'links' && links.length === 0) fetchLinks();
+    if (activeView === 'logs') fetchLogs();
+  }, [activeView]);
+
+  // --- API CALLS ---
+  const fetchStats = async () => { try { setStats(await api.getAdminStats()); } catch (e) { console.error(e); } };
+  
+  const fetchUsers = async () => {
     setLoading(true);
-    setError("");
-    try {
-      const [usersData, linksData, statsData] = await Promise.all([
-        api.getAllUsers(),
-        api.getAllLinks(),
-        api.getAdminStats(),
-      ]);
-      setUsers(usersData);
-      setLinks(linksData);
-      setStats(statsData);
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch data");
-    } finally {
-      setLoading(false);
-    }
+    try { setUsers(await api.getAllUsers()); } catch (e) { console.error(e); } finally { setLoading(false); }
+  };
+  
+  const fetchLinks = async () => {
+    setLoading(true);
+    try { setLinks(await api.getAllLinks()); } catch (e) { console.error(e); } finally { setLoading(false); }
+  };
+  
+  const fetchLogs = async () => {
+    setLoading(true);
+    try { setLogs(await api.getLogs()); } catch (e) { console.error(e); } finally { setLoading(false); }
   };
 
+  // --- ACTIONS ---
   const handleDeleteUser = async (uid: string) => {
-    if (!confirm("Are you sure you want to delete this user? This will also delete all their links.")) return;
-    try {
-      await api.deleteUser(uid);
-      setUsers(users.filter(u => u.uid !== uid));
-      // Also remove links by this user
-      setLinks(links.filter(l => l.ownerId !== uid));
-    } catch (err: any) {
-      alert(err.message || "Failed to delete user");
-    }
+    if (!confirm("Delete this user?")) return;
+    try { await api.deleteUser(uid); setUsers(users.filter(u => u.uid !== uid)); } catch (e) { alert("Failed"); }
   };
-
   const handleDeleteLink = async (slug: string) => {
-    if (!confirm("Are you sure you want to delete this link?")) return;
-    try {
-      await api.adminDeleteLink(slug);
-      setLinks(links.filter(l => l._id !== slug));
-    } catch (err: any) {
-      alert(err.message || "Failed to delete link");
-    }
+    if (!confirm("Delete this link?")) return;
+    try { await api.adminDeleteLink(slug); setLinks(links.filter(l => l._id !== slug)); } catch (e) { alert("Failed"); }
   };
 
-  const filteredUsers = users.filter(u => 
-    u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    u.displayName?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // --- HELPERS ---
+  const filteredUsers = users.filter(u => u.email?.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredLinks = links.filter(l => l.originalUrl.toLowerCase().includes(searchTerm.toLowerCase()));
 
-  const filteredLinks = links.filter(l => 
-    l._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    l.originalUrl.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    l.ownerEmail?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-red-500 animate-spin" />
-      </div>
-    );
-  }
+  if (authLoading) return <div className="h-screen bg-slate-950 flex items-center justify-center"><Loader2 className="animate-spin text-red-500" /></div>;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col">
       <Navbar />
+      
+      <div className="flex flex-1 pt-16 relative">
+        
+        {/* === SIDEBAR NAVIGATION === */}
+        <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-slate-900 border-r border-slate-800 transition-all duration-300 hidden md:flex flex-col`}>
+          <div className="p-6 flex items-center justify-between">
+            {sidebarOpen && (
+              <h2 className="text-xl font-bold flex items-center gap-2 text-white animate-in fade-in">
+                <ShieldAlert className="w-6 h-6 text-red-500" /> Admin
+              </h2>
+            )}
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-slate-500 hover:text-white">
+              {sidebarOpen ? <X className="w-5 h-5"/> : <Menu className="w-5 h-5 mx-auto"/>}
+            </button>
+          </div>
 
-      <main className="flex-1 container mx-auto px-4 pt-24 pb-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold flex items-center gap-3">
-              <ShieldAlert className="w-8 h-8 text-red-500" />
-              Admin Control Panel
+          <nav className="flex-1 px-3 space-y-2 mt-4">
+            {[
+              { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+              { id: 'users', label: 'Users', icon: Users },
+              { id: 'links', label: 'Links', icon: Link2 },
+              { id: 'logs', label: 'Audit Logs', icon: ScrollText },
+              { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+            ].map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setActiveView(item.id as any)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                  activeView === item.id 
+                    ? 'bg-red-600 text-white shadow-lg shadow-red-900/20' 
+                    : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                } ${!sidebarOpen && 'justify-center'}`}
+                title={item.label}
+              >
+                <item.icon className="w-5 h-5 shrink-0" />
+                {sidebarOpen && <span>{item.label}</span>}
+              </button>
+            ))}
+          </nav>
+        </aside>
+
+        {/* === MAIN CONTENT AREA === */}
+        <main className="flex-1 p-6 md:p-8 overflow-y-auto h-[calc(100vh-64px)]">
+          
+          {/* Header Bar */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+            <h1 className="text-3xl font-bold capitalize flex items-center gap-2">
+              {activeView} <span className="text-slate-600 text-lg font-normal">/ Dashboard</span>
             </h1>
-            <p className="text-slate-400 mt-1">
-              System-wide management and monitoring
-            </p>
+            
+            <div className="flex gap-3">
+              {(activeView === 'users' || activeView === 'links') && (
+                <div className="relative w-full md:w-auto">
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+                  <Input 
+                    placeholder={`Search ${activeView}...`} 
+                    className="pl-9 bg-slate-900 border-slate-700 w-full md:w-64"
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                  />
+                </div>
+              )}
+              <Button variant="outline" size="icon" onClick={() => window.location.reload()} className="border-slate-700 shrink-0">
+                <RefreshCw className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
-          <Button 
-            variant="outline" 
-            onClick={fetchData}
-            className="border-slate-700 text-slate-300 hover:bg-slate-800"
-            disabled={loading}
-          >
-            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} /> 
-            Refresh
-          </Button>
-        </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <Card className="bg-slate-900 border-slate-800">
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="p-3 bg-blue-900/30 rounded-lg">
-                <Users className="w-6 h-6 text-blue-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stats.totalUsers}</p>
-                <p className="text-sm text-slate-400">Total Users</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-slate-900 border-slate-800">
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="p-3 bg-green-900/30 rounded-lg">
-                <Link2 className="w-6 h-6 text-green-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stats.totalLinks}</p>
-                <p className="text-sm text-slate-400">Total Links</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-slate-900 border-slate-800">
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="p-3 bg-purple-900/30 rounded-lg">
-                <Eye className="w-6 h-6 text-purple-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stats.totalClicks}</p>
-                <p className="text-sm text-slate-400">Total Clicks</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-slate-900 border-slate-800">
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="p-3 bg-amber-900/30 rounded-lg">
-                <AlertTriangle className="w-6 h-6 text-amber-500" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stats.activeLinks}</p>
-                <p className="text-sm text-slate-400">Active Links</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+          {/* === DYNAMIC CONTENT SWITCH === */}
+          
+          {/* 1. OVERVIEW */}
+          {activeView === 'overview' && (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 animate-in fade-in slide-in-from-bottom-4">
+              <StatsCard title="Total Users" value={stats.totalUsers} icon={Users} color="text-blue-500" />
+              <StatsCard title="Total Links" value={stats.totalLinks} icon={Link2} color="text-green-500" />
+              <StatsCard title="Total Clicks" value={stats.totalClicks} icon={Eye} color="text-purple-500" />
+              <StatsCard title="Active Links" value={stats.activeLinks} icon={AlertTriangle} color="text-amber-500" />
+            </div>
+          )}
 
-        {/* Search and Tabs */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
-            <Input
-              placeholder="Search users or links..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-slate-900 border-slate-700 text-white"
-            />
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant={activeTab === 'users' ? 'default' : 'outline'}
-              onClick={() => setActiveTab('users')}
-              className={activeTab === 'users' ? 'bg-red-600 hover:bg-red-700' : 'border-slate-700'}
-            >
-              <Users className="w-4 h-4 mr-2" /> Users ({users.length})
-            </Button>
-            <Button
-              variant={activeTab === 'links' ? 'default' : 'outline'}
-              onClick={() => setActiveTab('links')}
-              className={activeTab === 'links' ? 'bg-red-600 hover:bg-red-700' : 'border-slate-700'}
-            >
-              <Link2 className="w-4 h-4 mr-2" /> Links ({links.length})
-            </Button>
-          </div>
-        </div>
+          {/* 2. USERS TABLE */}
+          {activeView === 'users' && (
+            <div className="bg-slate-900 rounded-lg border border-slate-800 overflow-hidden animate-in fade-in">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-slate-950/50 text-slate-500 border-b border-slate-800">
+                    <tr>
+                      <th className="p-4">Email</th>
+                      <th className="p-4">User ID</th>
+                      <th className="p-4 text-center">Links</th>
+                      <th className="p-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800">
+                    {filteredUsers.map(u => (
+                      <tr key={u.uid} className="hover:bg-slate-800/50">
+                        <td className="p-4 font-medium text-slate-200">{u.email}</td>
+                        <td className="p-4 font-mono text-xs text-slate-500">{u.uid}</td>
+                        <td className="p-4 text-center"><span className="bg-slate-800 px-2 py-1 rounded">{u.linksCount || 0}</span></td>
+                        <td className="p-4 text-right flex justify-end gap-2">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => navigate(`/admin/user/${u.uid}`)} 
+                            className="text-blue-500 hover:bg-blue-900/20"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleDeleteUser(u.uid)} 
+                            className="text-red-500 hover:bg-red-900/20"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
-        {/* Content */}
-        {error && (
-          <div className="bg-red-900/20 border border-red-900 text-red-500 p-4 rounded-lg mb-6">
-            {error}
-          </div>
-        )}
+          {/* 3. LINKS TABLE */}
+          {activeView === 'links' && (
+            <div className="bg-slate-900 rounded-lg border border-slate-800 overflow-hidden animate-in fade-in">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-slate-950/50 text-slate-500 border-b border-slate-800">
+                    <tr>
+                      <th className="p-4">Slug</th>
+                      <th className="p-4">Destination</th>
+                      <th className="p-4">Owner</th>
+                      <th className="p-4 text-center">Clicks</th>
+                      <th className="p-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800">
+                    {filteredLinks.map(l => (
+                      <tr key={l._id} className="hover:bg-slate-800/50">
+                        <td className="p-4 font-mono text-red-400">/{l._id}</td>
+                        <td className="p-4 max-w-xs truncate text-slate-400">
+                          <a href={l.originalUrl} target="_blank" className="hover:text-white flex items-center gap-1">
+                            {l.originalUrl} <ExternalLink className="w-3 h-3"/>
+                          </a>
+                        </td>
+                        <td className="p-4 text-slate-300">{l.ownerEmail || 'Guest'}</td>
+                        <td className="p-4 text-center font-bold">{l.clickCount}</td>
+                        <td className="p-4 text-right flex justify-end gap-2">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => navigate(`/admin/link/${l._id}`)} 
+                            className="text-blue-500 hover:bg-blue-900/20"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleDeleteLink(l._id)} 
+                            className="text-red-500 hover:bg-red-900/20"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 text-red-500 animate-spin" />
-          </div>
-        ) : activeTab === 'users' ? (
-          /* Users Table */
-          <Card className="bg-slate-900 border-slate-800">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Users className="w-5 h-5 text-blue-500" />
-                User Management
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {filteredUsers.length === 0 ? (
-                <p className="text-slate-500 text-center py-8">No users found.</p>
+          {/* 4. LOGS TABLE */}
+          {activeView === 'logs' && (
+            <div className="bg-slate-900 rounded-lg border border-slate-800 overflow-hidden animate-in fade-in">
+              {loading ? (
+                <div className="p-12 text-center text-slate-500"><Loader2 className="w-8 h-8 animate-spin mx-auto mb-2"/> Loading Logs...</div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-slate-800 text-left text-slate-400 text-sm">
-                        <th className="pb-3 font-medium">User ID</th>
-                        <th className="pb-3 font-medium">Email</th>
-                        <th className="pb-3 font-medium">Name</th>
-                        <th className="pb-3 font-medium text-center">Links</th>
-                        <th className="pb-3 font-medium">Joined</th>
-                        <th className="pb-3 font-medium text-right">Actions</th>
+                  <table className="w-full text-sm text-left">
+                    <thead className="bg-slate-950/50 text-slate-500 border-b border-slate-800">
+                      <tr>
+                        <th className="p-4">Time</th>
+                        <th className="p-4">Action</th>
+                        <th className="p-4">Actor</th>
+                        <th className="p-4">Details</th>
+                        <th className="p-4 text-right">IP</th>
                       </tr>
                     </thead>
-                    <tbody>
-                      {filteredUsers.map((userData) => (
-                        <tr key={userData.uid} className="border-b border-slate-800/50 hover:bg-slate-800/30">
-                          <td className="py-4">
-                            <span className="font-mono text-xs text-slate-500">
-                              {userData.uid.substring(0, 12)}...
+                    <tbody className="divide-y divide-slate-800">
+                      {logs.map(log => (
+                        <tr key={log._id} className="hover:bg-slate-800/50">
+                          <td className="p-4 font-mono text-xs text-slate-500 whitespace-nowrap">
+                            {new Date(log.timestamp).toLocaleString()}
+                          </td>
+                          <td className="p-4">
+                            <span className={`px-2 py-1 rounded text-xs font-bold ${
+                              log.action.includes('DELETE') ? 'bg-red-900/20 text-red-400' : 
+                              log.action.includes('SCAN') ? 'bg-blue-900/20 text-blue-400' : 'bg-green-900/20 text-green-400'
+                            }`}>
+                              {log.action}
                             </span>
                           </td>
-                          <td className="py-4">
-                            <Link 
-                              to={`/admin/user/${userData.uid}`}
-                              className="text-slate-300 hover:text-red-400 hover:underline transition-colors"
-                            >
-                              {userData.email}
-                            </Link>
-                          </td>
-                          <td className="py-4 text-slate-300">{userData.displayName || '-'}</td>
-                          <td className="py-4 text-center">
-                            <Link 
-                              to={`/admin/user/${userData.uid}`}
-                              className="bg-slate-800 px-2 py-1 rounded text-sm hover:bg-red-900/30 transition-colors"
-                            >
-                              {userData.linksCount || 0}
-                            </Link>
-                          </td>
-                          <td className="py-4 text-slate-400 text-sm">
-                            <div className="flex items-center gap-1">
-                              <Calendar className="w-3 h-3" />
-                              {userData.createdAt ? new Date(userData.createdAt._seconds * 1000).toLocaleDateString() : 'N/A'}
-                            </div>
-                          </td>
-                          <td className="py-4 text-right flex gap-1 justify-end">
-                            <Link to={`/admin/user/${userData.uid}`}>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-blue-500 hover:text-blue-400 hover:bg-blue-900/20"
-                              >
-                                <Eye className="w-4 h-4" />
-                              </Button>
-                            </Link>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteUser(userData.uid)}
-                              className="text-red-500 hover:text-red-400 hover:bg-red-900/20"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </td>
+                          <td className="p-4 text-slate-300">{log.performerEmail}</td>
+                          <td className="p-4 text-slate-400 max-w-md truncate" title={log.details}>{log.details}</td>
+                          <td className="p-4 text-right font-mono text-xs text-slate-500">{log.metadata?.ip || '-'}</td>
                         </tr>
                       ))}
+                      {logs.length === 0 && (
+                        <tr><td colSpan={5} className="p-8 text-center text-slate-500">No logs found.</td></tr>
+                      )}
                     </tbody>
                   </table>
                 </div>
               )}
-            </CardContent>
-          </Card>
-        ) : (
-          /* Links Table */
-          <Card className="bg-slate-900 border-slate-800">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Link2 className="w-5 h-5 text-green-500" />
-                System Links
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {filteredLinks.length === 0 ? (
-                <p className="text-slate-500 text-center py-8">No links found.</p>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-slate-800 text-left text-slate-400 text-sm">
-                        <th className="pb-3 font-medium">Short Code</th>
-                        <th className="pb-3 font-medium">Original URL</th>
-                        <th className="pb-3 font-medium">Creator</th>
-                        <th className="pb-3 font-medium text-center">Clicks</th>
-                        <th className="pb-3 font-medium">Created</th>
-                        <th className="pb-3 font-medium text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredLinks.map((link) => (
-                        <tr key={link._id} className="border-b border-slate-800/50 hover:bg-slate-800/30">
-                          <td className="py-4">
-                            <Link 
-                              to={`/admin/link/${link._id}`}
-                              className="font-mono text-red-500 hover:text-red-400 hover:underline transition-colors"
-                            >
-                              {link._id}
-                            </Link>
-                          </td>
-                          <td className="py-4">
-                            <a
-                              href={link.originalUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-slate-300 hover:text-white flex items-center gap-1 max-w-[200px] truncate"
-                            >
-                              {link.originalUrl.substring(0, 40)}...
-                              <ExternalLink className="w-3 h-3 flex-shrink-0" />
-                            </a>
-                          </td>
-                          <td className="py-4 text-slate-400 text-sm">
-                            {link.ownerId && link.ownerId !== 'guest' ? (
-                              <Link 
-                                to={`/admin/user/${link.ownerId}`}
-                                className="hover:text-red-400 hover:underline transition-colors"
-                              >
-                                {link.ownerEmail || link.ownerId.substring(0, 8) + '...'}
-                              </Link>
-                            ) : (
-                              <span className="text-slate-500">Guest</span>
-                            )}
-                          </td>
-                          <td className="py-4 text-center">
-                            <span className="bg-slate-800 px-2 py-1 rounded text-sm">
-                              {link.clickCount}
-                            </span>
-                          </td>
-                          <td className="py-4 text-slate-400 text-sm">
-                            {link.createdAt ? new Date(link.createdAt._seconds * 1000).toLocaleDateString() : 'N/A'}
-                          </td>
-                          <td className="py-4 text-right flex gap-1 justify-end">
-                            <Link to={`/admin/link/${link._id}`}>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-blue-500 hover:text-blue-400 hover:bg-blue-900/20"
-                              >
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                            </Link>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteLink(link._id)}
-                              className="text-red-500 hover:text-red-400 hover:bg-red-900/20"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-      </main>
+            </div>
+          )}
+
+          {/* 5. ANALYTICS (PLACEHOLDER) */}
+          {activeView === 'analytics' && (
+            <div className="flex flex-col items-center justify-center h-96 border-2 border-dashed border-slate-800 rounded-lg bg-slate-900/50 animate-in zoom-in-95">
+              <div className="p-4 bg-slate-800 rounded-full mb-4">
+                <BarChart3 className="w-12 h-12 text-slate-400" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-300">Analytics Engine Offline</h3>
+              <p className="text-slate-500 mt-2 max-w-sm text-center">
+                Geographic data, traffic heatmaps, and threat analysis visualizations will be enabled in the next system update.
+              </p>
+              <Button variant="outline" className="mt-6 border-slate-700" disabled>Coming Soon</Button>
+            </div>
+          )}
+
+        </main>
+      </div>
     </div>
+  );
+}
+
+// Stats Card Component
+function StatsCard({ title, value, icon: Icon, color }: any) {
+  return (
+    <Card className="bg-slate-900 border-slate-800">
+      <CardContent className="p-6 flex items-center gap-4">
+        <div className={`p-3 rounded-lg bg-slate-950 border border-slate-800 ${color}`}>
+          <Icon className="w-6 h-6" />
+        </div>
+        <div>
+          <p className="text-2xl font-bold text-white">{value}</p>
+          <p className="text-sm text-slate-500">{title}</p>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

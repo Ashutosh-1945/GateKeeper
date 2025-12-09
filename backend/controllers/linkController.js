@@ -3,12 +3,14 @@ const { nanoid } = require('nanoid');
 const admin = require('firebase-admin');
 const axios = require('axios');
 const cheerio = require('cheerio');
+const logEvent = require('../utils/logger');
 require('dotenv').config();
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 // Create Link
 exports.createLink = async (req, res) => {
   try {
+    console.log("Create Link Request Body:", req.body);
     const { originalUrl, customSlug, password, expiresAt, maxClicks, allowedDomain, securityType } = req.body;
     const ownerId = req.user ? req.user.uid : 'guest';
 
@@ -58,6 +60,8 @@ exports.createLink = async (req, res) => {
 
     await db.collection('links').doc(slug).set(newLink);
 
+    logEvent('LINK_CREATE', req.user, slug, `Created link to ${originalUrl}`, req);
+
     res.status(201).json({ shortLink: `http://localhost:5173/${slug}`, slug });
 
   } catch (error) {
@@ -87,6 +91,7 @@ exports.checkLink = async (req, res) => {
 
     if (isExpired || isBurned) {
       await docRef.delete();
+      logEvent('LINK_AUTO_DELETE', null, slug, 'Link self-destructed (Expired/Burned)', req);
       return res.status(410).json({ error: 'This link has self-destructed' });
     }
 
@@ -116,6 +121,8 @@ exports.checkLink = async (req, res) => {
       clickCount: admin.firestore.FieldValue.increment(1)
     });
 
+    logEvent('LINK_ACCESS', null, slug, `Visitor accessed link`, req);
+
     res.json({ originalUrl: link.originalUrl });
 
   } catch (error) {
@@ -137,8 +144,11 @@ exports.unlockLink = async (req, res) => {
     const link = doc.data();
 
     if (link.security.password !== password) {
+      logEvent('AUTH_FAIL', null, slug, 'Incorrect password attempt', req);
       return res.status(401).json({ error: 'Incorrect password' });
     }
+
+    logEvent('LINK_UNLOCK_PASS', null, slug, 'Visitor unlocked via password', req);
 
     await docRef.update({ clickCount: admin.firestore.FieldValue.increment(1) });
     res.json({ originalUrl: link.originalUrl });
@@ -172,11 +182,12 @@ exports.unlockWithGoogle = async (req, res) => {
 
     // C. Check Domain Match
     if (!userEmail.endsWith(`@${requiredDomain}`)) {
+      logEvent('AUTH_FAIL', { email: userEmail, uid: 'google_guest' }, slug, `Domain mismatch: ${userEmail}`, req);
       return res.status(403).json({ 
         error: `Access Denied. You must use an email from: @${requiredDomain}. Your email: ${userEmail}` 
       });
     }
-
+    logEvent('LINK_UNLOCK_DOMAIN', { email: userEmail, uid: decodedToken.uid }, slug, `Unlocked by ${userEmail}`, req);
     // D. Success
     await docRef.update({ clickCount: admin.firestore.FieldValue.increment(1) });
     res.json({ originalUrl: link.originalUrl });
@@ -248,6 +259,10 @@ exports.scanUrl = async (req, res) => {
     const jsonStr = result.response.text().replace(/```json|```/g, "").trim();
     const analysis = JSON.parse(jsonStr);
 
+    logEvent('AI_SCAN', req.user, null, `Scanned URL: ${req.body.url}. Verdict: ${analysis.status}`, req);
+
+    
+
     console.log(`🤖 AI Verdict: ${analysis.status} - ${analysis.reason}`);
     res.json(analysis);
 
@@ -309,8 +324,11 @@ exports.deleteLink = async (req, res) => {
     await docRef.delete();
     res.json({ success: true, message: 'Link destroyed' });
 
+    logEvent('LINK_CREATE', req.user, slug, `Created link to ${originalUrl}`, req);
+
   } catch (error) {
     console.error('Delete Link Error:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+

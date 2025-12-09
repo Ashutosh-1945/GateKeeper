@@ -1,6 +1,7 @@
 import { auth } from '../firebase';
 import { getIdToken } from 'firebase/auth';
 
+
 const API_URL = 'http://localhost:5000/api';
 
 // Helper to get token
@@ -95,6 +96,25 @@ export const api = {
     return res.json();
   },
 
+  scanUrl: async (data: { url: string }) => {
+    const headers = await getAuthHeader();
+    const res = await fetch(`${API_URL}/link/scan`, {
+      method: 'POST',
+      headers: {
+        ...headers,
+        'Content-Type': 'application/json', // 👈 Required for sending JSON data
+      } as HeadersInit,
+      body: JSON.stringify(data),
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.error || 'Failed to scan URL');
+    }
+    
+    return res.json();
+  },
+
   // ============ ADMIN ENDPOINTS ============
 
   // Get all users (Admin only)
@@ -109,6 +129,22 @@ export const api = {
       const error = await res.json();
       throw new Error(error.error || 'Failed to fetch users');
     }
+    return res.json();
+  },
+
+getLogs: async () => {
+    const headers = await getAuthHeader();
+    const res = await fetch(`${API_URL}/admin/logs`, {
+      headers: {
+        ...headers,
+      } as HeadersInit,
+    });
+    
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.error || 'Failed to fetch logs');
+    }
+    
     return res.json();
   },
 
@@ -228,4 +264,6 @@ export const api = {
     return res.json();
   },
 };
+
+
 
