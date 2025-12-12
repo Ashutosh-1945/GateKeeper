@@ -18,11 +18,9 @@ export default function App() {
       <AuthProvider>
         {/* Cinematic Effects Overlay */}
         <CinematicOverlay 
-          enableScanlines={true}
-          enableGrain={true}
-          enableSpores={true}
-          enableVignette={true}
-          sporeCount={10}
+          enableParticles={true}
+          enableAtmosphere={true}
+          particleCount={15}
         />
         
         <Router>
