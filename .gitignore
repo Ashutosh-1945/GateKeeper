@@ -8,9 +8,9 @@ node_modules/
 .env.*.local
 *.env
 
-# Firebase sensitive files
+# Firebase sensitive files (backend only - frontend uses env vars now)
 backend/serviceAccountKey.json
-frontend/src/firebase.ts
+**/serviceAccountKey*.json
 
 # Build outputs
 dist/

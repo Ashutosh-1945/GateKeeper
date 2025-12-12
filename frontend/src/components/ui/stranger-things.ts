@@ -11,19 +11,15 @@ export { ThemeProvider, useTheme } from "@/context/ThemeContext";
 export { 
   ThemeToggle, 
   ThemeToggleCompact, 
-  ThemeTogglePortal 
 } from "./ThemeToggle";
 
 // Cinematic Effects
 export {
-  CRTScanlines,
-  FilmGrain,
-  FloatingSpores,
-  Vignette,
-  VeinsOverlay,
+  MemphisBackground,
+  AtmosphereTint,
+  FloatingAsh,
+  PortalGlow,
   CinematicOverlay,
-  ChromaticText,
-  GlowContainer,
 } from "./CinematicEffects";
 
 // Cards
@@ -40,9 +36,6 @@ export {
 // Buttons
 export {
   StrangerButton,
-  IconButton,
-  ButtonGroup,
-  strangerButtonVariants,
 } from "./StrangerButton";
 
 // Inputs
