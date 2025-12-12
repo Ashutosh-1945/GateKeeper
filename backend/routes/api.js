@@ -15,6 +15,8 @@ router.post('/link/:slug/unlock-google', linkController.unlockWithGoogle);
 
 // ============ AUTHENTICATED USER ROUTES ============
 router.post('/link/scan', requireAuth, linkController.scanUrl);
+router.put('/link/:slug', requireAuth, linkController.updateUserLink); // 👈 NEW: Update link (slug rename + tags)
+router.get('/link/:slug/analytics', requireAuth, linkController.getLinkAnalytics); // 👈 NEW: Get link analytics
 router.delete('/link/:slug', requireAuth, linkController.deleteLink);
 router.get('/dashboard', requireAuth, linkController.getUserLinks);
 

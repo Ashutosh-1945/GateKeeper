@@ -1,8 +1,8 @@
 import { auth } from '../firebase';
 import { getIdToken } from 'firebase/auth';
 
-
-const API_URL = 'http://localhost:5000/api';
+// Use environment variable for API URL, with fallback for development
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 // Helper to get token
 const getAuthHeader = async () => {
@@ -92,6 +92,42 @@ export const api = {
     if (!res.ok) {
       const error = await res.json();
       throw new Error(error.error || 'Failed to delete link');
+    }
+    return res.json();
+  },
+
+  // Update Link (slug rename + tags)
+  updateLink: async (oldSlug: string, data: {
+    newSlug?: string;
+    tags?: string[];
+  }) => {
+    const headers = await getAuthHeader();
+    const res = await fetch(`${API_URL}/link/${oldSlug}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...headers,
+      } as HeadersInit,
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.error || 'Failed to update link');
+    }
+    return res.json();
+  },
+
+  // Get Link Analytics
+  getLinkAnalytics: async (slug: string) => {
+    const headers = await getAuthHeader();
+    const res = await fetch(`${API_URL}/link/${slug}/analytics`, {
+      headers: {
+        ...headers,
+      } as HeadersInit,
+    });
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.error || 'Failed to fetch analytics');
     }
     return res.json();
   },

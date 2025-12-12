@@ -1,10 +1,13 @@
 import { Link, useNavigate } from "react-router-dom";
 import { ShieldCheck, LogOut, LayoutDashboard, ShieldAlert } from "lucide-react"; 
-import { Button } from "@/components/ui/button";
+import { StrangerButton } from "@/components/ui/StrangerButton";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
+import { ThemeToggleCompact } from "@/components/ui/ThemeToggle";
 
 export default function Navbar() {
   const { user, loading, logout, isAdmin } = useAuth();
+  const { isUpsideDown } = useTheme();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -13,65 +16,154 @@ export default function Navbar() {
   };
 
   return (
-    <header className="fixed top-0 left-0 w-full z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800">
-      {/* Changed max-w-7xl to w-full and increased padding to px-6 or px-8 for better spacing */}
+    <header 
+      className={`
+        fixed top-0 left-0 w-full z-50 transition-all duration-300
+        ${isUpsideDown 
+          ? "bg-[#050505]/95 border-b-2 border-[#E71D36] backdrop-blur-md" 
+          : "bg-[var(--color-neo-cream)] border-b-2 border-[var(--color-neo-black)] shadow-[0_4px_0px_0px_var(--color-neo-gray)]"
+        }
+      `}
+    >
       <div className="w-full px-6 md:px-8 h-16 flex items-center justify-between">
         
         {/* Left Side: GateKeeper Logo */}
         <Link to="/" className="flex items-center gap-2 group">
-          <ShieldCheck className="w-8 h-8 text-red-600 group-hover:text-red-500 transition-colors" />
-          <span className="text-2xl font-bold tracking-tight text-slate-100">
-            <span className="text-red-600">Gate</span>Keeper
-          </span>
+          {isUpsideDown ? (
+            <div className="flex items-center gap-3 group-hover:-translate-y-0.5 transition-transform">
+              <div className="relative">
+                <div className="absolute inset-0 bg-[#E71D36] translate-x-1 translate-y-1" />
+                <div className="relative bg-black border-2 border-[#E71D36] p-1.5">
+                  <ShieldCheck className="w-6 h-6 text-[#E71D36]" />
+                </div>
+              </div>
+              <span 
+                className="text-2xl font-black tracking-wider transition-colors duration-300"
+                style={{ fontFamily: "Merriweather, serif" }}
+              >
+                <span className="text-[#E71D36]">Gate</span>
+                <span className="text-white">Keeper</span>
+              </span>
+            </div>
+          ) : (
+            <div className="neo-logo">
+              <div className="neo-logo-shadow" />
+              <div className="neo-logo-content flex items-center gap-2">
+                <ShieldCheck className="w-6 h-6 text-[var(--color-neo-black)]" />
+                <span className="text-[var(--color-neo-pink)]">Gate</span>
+                <span className="text-[var(--color-neo-black)]">Keeper</span>
+              </div>
+            </div>
+          )}
         </Link>
 
         {/* Right Side: Auth-dependent actions */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          {/* Theme Toggle - Always visible */}
+          <ThemeToggleCompact />
+
           {loading ? (
-            // Show nothing or a skeleton while checking auth
-            <div className="w-20 h-8 bg-slate-800 animate-pulse rounded" />
+            <div 
+              className={`
+                w-20 h-8 animate-pulse
+                ${isUpsideDown ? "bg-[#111] border border-[#E71D36]/30" : "bg-[var(--color-cream-dark)] rounded"}
+              `} 
+            />
           ) : user ? (
-            // LOGGED IN: Show Dashboard link, greeting, and Logout button
             <>
-              <span className="text-slate-400 text-sm hidden sm:block">
-                Hello, <span className="text-red-500">{user.email?.split('@')[0]}</span>
-                {isAdmin && <span className="ml-1 text-amber-500">(Admin)</span>}
+              <span 
+                className={`
+                  text-sm hidden sm:block
+                  ${isUpsideDown ? "text-white/70 font-['Courier_Prime']" : "text-[var(--color-cream-text)] font-medium"}
+                `}
+                style={{ fontFamily: isUpsideDown ? "Courier Prime, monospace" : "var(--font-body)" }}
+              >
+                Hello, <span className={isUpsideDown ? "text-[#E71D36]" : "font-semibold"}>
+                  {user.email?.split('@')[0]}
+                </span>
+                {isAdmin && (
+                  <span className={`ml-1 ${isUpsideDown ? "text-[#E71D36]/70" : "text-[var(--color-primary)]"}`}>
+                    (Admin)
+                  </span>
+                )}
               </span>
               <Link to="/dashboard">
-                <Button variant="ghost" className="text-slate-300 hover:text-white hover:bg-slate-800">
+                <StrangerButton 
+                  variant="ghost" 
+                  size="sm"
+                  className={`
+                    text-xs uppercase tracking-wider
+                    ${isUpsideDown 
+                      ? "text-white/70 hover:text-[#E71D36] hover:bg-[#E71D36]/10 font-['Courier_Prime']" 
+                      : ""
+                    }
+                  `}
+                >
                   <LayoutDashboard className="w-4 h-4 mr-2" />
                   Dashboard
-                </Button>
+                </StrangerButton>
               </Link>
               {isAdmin && (
                 <Link to="/admin">
-                  <Button variant="ghost" className="text-amber-500 hover:text-amber-400 hover:bg-amber-900/20">
+                  <StrangerButton 
+                    variant="ghost" 
+                    size="sm"
+                    className={`
+                      text-xs uppercase tracking-wider
+                      ${isUpsideDown 
+                        ? "text-[#E71D36] hover:text-[#E71D36] hover:bg-[#E71D36]/10 font-['Courier_Prime']" 
+                        : ""
+                      }
+                    `}
+                  >
                     <ShieldAlert className="w-4 h-4 mr-2" />
                     Admin
-                  </Button>
+                  </StrangerButton>
                 </Link>
               )}
-              <Button 
+              <StrangerButton 
                 onClick={handleLogout}
-                variant="outline" 
-                className="border-red-900 text-red-500 hover:bg-red-900/20 hover:text-red-400"
+                variant="secondary"
+                size="sm"
+                className={`
+                  text-xs uppercase tracking-wider
+                  ${isUpsideDown 
+                    ? "border-[#E71D36] text-[#E71D36] hover:bg-[#E71D36]/10 font-['Courier_Prime']" 
+                    : ""
+                  }
+                `}
               >
                 <LogOut className="w-4 h-4 mr-2" />
                 Logout
-              </Button>
+              </StrangerButton>
             </>
           ) : (
             // NOT LOGGED IN: Show Login and Sign Up links
             <>
               <Link to="/login">
-                <Button variant="ghost" className="text-slate-300 hover:text-white hover:bg-slate-800">
+                <StrangerButton 
+                  variant="ghost"
+                  size="sm"
+                  className={`
+                    text-xs uppercase tracking-wider
+                    ${isUpsideDown 
+                      ? "text-white/70 hover:text-[#E71D36] hover:bg-[#E71D36]/10 font-['Courier_Prime']" 
+                      : ""
+                    }
+                  `}
+                >
                   Log In
-                </Button>
+                </StrangerButton>
               </Link>
               <Link to="/register">
-                <Button className="bg-red-600 hover:bg-red-700 text-white font-semibold shadow-[0_0_10px_rgba(220,38,38,0.3)] hover:shadow-[0_0_15px_rgba(220,38,38,0.5)] transition-all">
+                <StrangerButton 
+                  size="sm"
+                  className={`
+                    text-xs uppercase tracking-wider
+                  `}
+                >
                   Sign Up
-                </Button>
+                </StrangerButton>
               </Link>
             </>
           )}

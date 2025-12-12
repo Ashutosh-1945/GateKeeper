@@ -12,12 +12,11 @@ import {
   Lock,
   Globe,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { StrangerButton } from "@/components/ui/StrangerButton";
+import { StrangerInput } from "@/components/ui/StrangerInput";
 import Navbar from "@/components/ui/common/Navbar";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 import { api } from "@/services/api";
 
 interface LinkDetails {
@@ -113,30 +112,32 @@ export default function AdminLinkEditor() {
     }
   };
 
+  const { isUpsideDown } = useTheme();
+
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-red-500 animate-spin" />
+      <div className={`min-h-screen flex items-center justify-center ${isUpsideDown ? 'bg-[#050505]' : 'bg-[var(--color-neo-green)]'}`}>
+        <Loader2 className={`w-8 h-8 animate-spin ${isUpsideDown ? 'text-[#E71D36] shadow-[0_0_20px_rgba(231,29,54,0.5)]' : 'text-[var(--color-neo-black)]'}`} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+    <div className={`min-h-screen flex flex-col ${isUpsideDown ? 'bg-[#050505] text-white font-["Courier_Prime"]' : 'bg-[var(--color-neo-green)] text-[var(--color-neo-black)] font-sans'}`}>
       <Navbar />
 
       <main className="flex-1 container mx-auto px-4 pt-24 pb-8 max-w-3xl">
         {/* Back Button */}
-        <Button
-          variant="ghost"
+        <StrangerButton
+          variant="secondary"
           onClick={() => navigate("/admin")}
-          className="mb-6 text-slate-400 hover:text-white"
+          className="mb-6"
         >
           <ArrowLeft className="w-4 h-4 mr-2" /> Back to Admin Panel
-        </Button>
+        </StrangerButton>
 
         {error && !link && (
-          <div className="bg-red-900/20 border border-red-900 text-red-500 p-4 rounded-lg">
+          <div className={`p-4 rounded-lg border-2 ${isUpsideDown ? 'bg-[#111111] border-[#E71D36] text-[#E71D36]' : 'bg-red-100 border-red-400 text-red-700'}`}>
             {error}
           </div>
         )}
@@ -144,25 +145,25 @@ export default function AdminLinkEditor() {
         {link && (
           <>
             {/* Link Info Card */}
-            <Card className="bg-slate-900 border-slate-800 mb-6">
-              <CardHeader>
-                <CardTitle className="text-xl flex items-center gap-2">
-                  <Link2 className="w-6 h-6 text-green-500" />
-                  Edit Link: <span className="text-red-500 font-mono">{link._id}</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+            <div className={`rounded-lg border-2 mb-6 ${isUpsideDown ? 'bg-[#111111] border-[#E71D36]/50 shadow-[4px_4px_0_0_rgba(231,29,54,0.3)]' : 'bg-[var(--color-neo-cream)] border-[var(--color-neo-black)]'}`}>
+              <div className={`p-6 border-b ${isUpsideDown ? 'border-[#E71D36]/30' : 'border-[var(--color-neo-black)]'}`}>
+                <h3 className={`text-xl font-bold flex items-center gap-2 ${isUpsideDown ? 'text-white font-["Merriweather"]' : 'text-[var(--color-neo-black)]'}`}>
+                  <Link2 className={`w-6 h-6 ${isUpsideDown ? 'text-[#E71D36]' : 'text-[var(--color-neo-green-dark)]'}`} />
+                  Edit Link: <span className={`font-mono ${isUpsideDown ? 'text-[#E71D36]' : 'text-[var(--color-neo-pink)]'}`}>{link._id}</span>
+                </h3>
+              </div>
+              <div className="p-6">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
-                    <p className="text-slate-400">Owner</p>
+                    <p className={isUpsideDown ? 'text-white/50' : 'text-[var(--color-neo-black)]/60'}>Owner</p>
                     <p className="font-medium">{link.ownerEmail || link.ownerId}</p>
                   </div>
                   <div>
-                    <p className="text-slate-400">Clicks</p>
+                    <p className={isUpsideDown ? 'text-white/50' : 'text-[var(--color-neo-black)]/60'}>Clicks</p>
                     <p className="font-medium">{link.clickCount}</p>
                   </div>
                   <div>
-                    <p className="text-slate-400">Created</p>
+                    <p className={isUpsideDown ? 'text-white/50' : 'text-[var(--color-neo-black)]/60'}>Created</p>
                     <p className="font-medium">
                       {link.createdAt
                         ? new Date(link.createdAt._seconds * 1000).toLocaleDateString()
@@ -170,33 +171,33 @@ export default function AdminLinkEditor() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-slate-400">Short URL</p>
+                    <p className={isUpsideDown ? 'text-white/50' : 'text-[var(--color-neo-black)]/60'}>Short URL</p>
                     <a
                       href={`${window.location.origin}/${link._id}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="font-medium text-blue-500 hover:text-blue-400 flex items-center gap-1"
+                      className={`font-medium flex items-center gap-1 ${isUpsideDown ? 'text-[#E71D36] hover:text-white' : 'text-[var(--color-neo-green-dark)] hover:underline'}`}
                     >
                       /{link._id} <ExternalLink className="w-3 h-3" />
                     </a>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Edit Form */}
-            <Card className="bg-slate-900 border-slate-800">
-              <CardHeader>
-                <CardTitle className="text-lg">Edit Link Settings</CardTitle>
-              </CardHeader>
-              <CardContent>
+            <div className={`rounded-lg border-2 ${isUpsideDown ? 'bg-[#111111] border-[#E71D36]/50 shadow-[4px_4px_0_0_rgba(231,29,54,0.3)]' : 'bg-[var(--color-neo-cream)] border-[var(--color-neo-black)]'}`}>
+              <div className={`p-6 border-b ${isUpsideDown ? 'border-[#E71D36]/30' : 'border-[var(--color-neo-black)]'}`}>
+                <h3 className={`text-lg font-bold ${isUpsideDown ? 'text-white font-["Merriweather"]' : 'text-[var(--color-neo-black)]'}`}>Edit Link Settings</h3>
+              </div>
+              <div className="p-6">
                 {error && (
-                  <div className="bg-red-900/20 border border-red-900 text-red-500 p-3 rounded-lg mb-4 text-sm">
+                  <div className={`p-3 rounded-lg mb-4 text-sm border ${isUpsideDown ? 'bg-[#050505] border-[#E71D36] text-[#E71D36]' : 'bg-red-100 border-red-400 text-red-700'}`}>
                     {error}
                   </div>
                 )}
                 {success && (
-                  <div className="bg-green-900/20 border border-green-900 text-green-500 p-3 rounded-lg mb-4 text-sm">
+                  <div className={`p-3 rounded-lg mb-4 text-sm border ${isUpsideDown ? 'bg-[#050505] border-green-500 text-green-500' : 'bg-green-100 border-green-400 text-green-700'}`}>
                     {success}
                   </div>
                 )}
@@ -204,66 +205,61 @@ export default function AdminLinkEditor() {
                 <div className="space-y-6">
                   {/* Original URL */}
                   <div className="space-y-2">
-                    <Label htmlFor="originalUrl" className="text-slate-300 flex items-center gap-2">
-                      <Globe className="w-4 h-4" /> Destination URL
-                    </Label>
-                    <Input
+                    <label htmlFor="originalUrl" className={`flex items-center gap-2 font-medium ${isUpsideDown ? 'text-white/80' : 'text-[var(--color-neo-black)]'}`}>
+                      <Globe className={`w-4 h-4 ${isUpsideDown ? 'text-[#E71D36]' : ''}`} /> Destination URL
+                    </label>
+                    <StrangerInput
                       id="originalUrl"
                       value={originalUrl}
-                      onChange={(e) => setOriginalUrl(e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOriginalUrl(e.target.value)}
                       placeholder="https://example.com"
-                      className="bg-slate-950 border-slate-700 text-white"
                     />
                   </div>
 
                   {/* Expiry Date */}
                   <div className="space-y-2">
-                    <Label htmlFor="expiresAt" className="text-slate-300 flex items-center gap-2">
-                      <Clock className="w-4 h-4" /> Expiry Date
-                    </Label>
-                    <Input
+                    <label htmlFor="expiresAt" className={`flex items-center gap-2 font-medium ${isUpsideDown ? 'text-white/80' : 'text-[var(--color-neo-black)]'}`}>
+                      <Clock className={`w-4 h-4 ${isUpsideDown ? 'text-[#E71D36]' : ''}`} /> Expiry Date
+                    </label>
+                    <StrangerInput
                       id="expiresAt"
                       type="date"
                       value={expiresAt}
-                      onChange={(e) => setExpiresAt(e.target.value)}
-                      className="bg-slate-950 border-slate-700 text-white"
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setExpiresAt(e.target.value)}
                     />
-                    <p className="text-xs text-slate-500">Leave empty for no expiry</p>
+                    <p className={`text-xs ${isUpsideDown ? 'text-white/40' : 'text-[var(--color-neo-black)]/50'}`}>Leave empty for no expiry</p>
                   </div>
 
                   {/* Max Clicks */}
                   <div className="space-y-2">
-                    <Label htmlFor="maxClicks" className="text-slate-300 flex items-center gap-2">
-                      <MousePointerClick className="w-4 h-4" /> Max Clicks
-                    </Label>
-                    <Input
+                    <label htmlFor="maxClicks" className={`flex items-center gap-2 font-medium ${isUpsideDown ? 'text-white/80' : 'text-[var(--color-neo-black)]'}`}>
+                      <MousePointerClick className={`w-4 h-4 ${isUpsideDown ? 'text-[#E71D36]' : ''}`} /> Max Clicks
+                    </label>
+                    <StrangerInput
                       id="maxClicks"
                       type="number"
                       value={maxClicks}
-                      onChange={(e) => setMaxClicks(e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMaxClicks(e.target.value)}
                       placeholder="Unlimited"
-                      min="1"
-                      className="bg-slate-950 border-slate-700 text-white"
                     />
-                    <p className="text-xs text-slate-500">
+                    <p className={`text-xs ${isUpsideDown ? 'text-white/40' : 'text-[var(--color-neo-black)]/50'}`}>
                       Current: {link.clickCount} clicks. Leave empty for unlimited.
                     </p>
                   </div>
 
                   {/* New Password */}
                   <div className="space-y-2">
-                    <Label htmlFor="password" className="text-slate-300 flex items-center gap-2">
-                      <Lock className="w-4 h-4" /> New Password
-                    </Label>
-                    <Input
+                    <label htmlFor="password" className={`flex items-center gap-2 font-medium ${isUpsideDown ? 'text-white/80' : 'text-[var(--color-neo-black)]'}`}>
+                      <Lock className={`w-4 h-4 ${isUpsideDown ? 'text-[#E71D36]' : ''}`} /> New Password
+                    </label>
+                    <StrangerInput
                       id="password"
                       type="password"
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                       placeholder={link.security.password ? "••••••• (leave empty to keep)" : "Set password (optional)"}
-                      className="bg-slate-950 border-slate-700 text-white"
                     />
-                    <p className="text-xs text-slate-500">
+                    <p className={`text-xs ${isUpsideDown ? 'text-white/40' : 'text-[var(--color-neo-black)]/50'}`}>
                       {link.security.password
                         ? "Link is password protected. Enter new password to change it."
                         : "Leave empty for no password protection."}
@@ -271,11 +267,10 @@ export default function AdminLinkEditor() {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex gap-3 pt-4 border-t border-slate-800">
-                    <Button
+                  <div className={`flex gap-3 pt-4 border-t ${isUpsideDown ? 'border-[#E71D36]/30' : 'border-[var(--color-neo-black)]'}`}>
+                    <StrangerButton
                       onClick={handleSave}
                       disabled={saving}
-                      className="bg-green-600 hover:bg-green-700"
                     >
                       {saving ? (
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -283,18 +278,17 @@ export default function AdminLinkEditor() {
                         <Save className="w-4 h-4 mr-2" />
                       )}
                       Save Changes
-                    </Button>
-                    <Button
-                      variant="outline"
+                    </StrangerButton>
+                    <StrangerButton
+                      variant="secondary"
                       onClick={() => navigate("/admin")}
-                      className="border-slate-700"
                     >
                       <X className="w-4 h-4 mr-2" /> Cancel
-                    </Button>
+                    </StrangerButton>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </>
         )}
       </main>

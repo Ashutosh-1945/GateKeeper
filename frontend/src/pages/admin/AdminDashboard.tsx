@@ -5,11 +5,11 @@ import {
   Search, AlertTriangle, BarChart3, ScrollText, LayoutDashboard, 
   Menu, X, ExternalLink, Edit
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { StrangerButton } from "@/components/ui/StrangerButton";
+import { StrangerInput } from "@/components/ui/StrangerInput";
 import Navbar from "@/components/ui/common/Navbar";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 import { api } from "@/services/api";
 
 // --- Types ---
@@ -86,24 +86,25 @@ export default function AdminDashboard() {
   // --- HELPERS ---
   const filteredUsers = users.filter(u => u.email?.toLowerCase().includes(searchTerm.toLowerCase()));
   const filteredLinks = links.filter(l => l.originalUrl.toLowerCase().includes(searchTerm.toLowerCase()));
+  const { isUpsideDown } = useTheme();
 
-  if (authLoading) return <div className="h-screen bg-slate-950 flex items-center justify-center"><Loader2 className="animate-spin text-red-500" /></div>;
+  if (authLoading) return <div className={`h-screen flex items-center justify-center ${isUpsideDown ? 'bg-[#050505]' : 'bg-[var(--color-neo-green)]'}`}><Loader2 className="animate-spin text-[#E71D36]" /></div>;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col">
+    <div className={`min-h-screen font-sans flex flex-col ${isUpsideDown ? 'bg-[#050505] text-white' : 'bg-[var(--color-neo-green)] text-[var(--color-neo-black)]'}`}>
       <Navbar />
       
       <div className="flex flex-1 pt-16 relative">
         
         {/* === SIDEBAR NAVIGATION === */}
-        <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-slate-900 border-r border-slate-800 transition-all duration-300 hidden md:flex flex-col`}>
+        <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} transition-all duration-300 hidden md:flex flex-col ${isUpsideDown ? 'bg-[#111] border-r-2 border-[#E71D36]' : 'bg-[var(--color-neo-cream)] border-r-2 border-[var(--color-neo-black)]'}`}>
           <div className="p-6 flex items-center justify-between">
             {sidebarOpen && (
-              <h2 className="text-xl font-bold flex items-center gap-2 text-white animate-in fade-in">
-                <ShieldAlert className="w-6 h-6 text-red-500" /> Admin
+              <h2 className={`text-xl font-black flex items-center gap-2 animate-in fade-in ${isUpsideDown ? 'text-white font-["Merriweather"]' : 'text-[var(--color-neo-black)]'}`}>
+                <ShieldAlert className={`w-6 h-6 ${isUpsideDown ? 'text-[#E71D36]' : 'text-[var(--color-neo-pink)]'}`} /> Admin
               </h2>
             )}
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-slate-500 hover:text-white">
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className={`${isUpsideDown ? 'text-white/30 hover:text-white' : 'text-[var(--color-neo-black)]/50 hover:text-[var(--color-neo-black)]'}`}>
               {sidebarOpen ? <X className="w-5 h-5"/> : <Menu className="w-5 h-5 mx-auto"/>}
             </button>
           </div>
@@ -119,10 +120,14 @@ export default function AdminDashboard() {
               <button
                 key={item.id}
                 onClick={() => setActiveView(item.id as any)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all ${
                   activeView === item.id 
-                    ? 'bg-red-600 text-white shadow-lg shadow-red-900/20' 
-                    : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                    ? isUpsideDown 
+                      ? 'bg-[#E71D36] text-black shadow-[4px_4px_0px_0px_#8a1120]' 
+                      : 'bg-[var(--color-neo-pink)] text-[var(--color-neo-black)] border-2 border-[var(--color-neo-black)] shadow-[4px_4px_0px_0px_var(--color-neo-black)] rounded-lg'
+                    : isUpsideDown
+                      ? 'text-white/60 hover:bg-[#E71D36]/10 hover:text-white font-["Courier_Prime"]'
+                      : 'text-[var(--color-neo-black)]/70 hover:bg-[var(--color-neo-cream-dark)] rounded-lg'
                 } ${!sidebarOpen && 'justify-center'}`}
                 title={item.label}
               >
@@ -138,25 +143,23 @@ export default function AdminDashboard() {
           
           {/* Header Bar */}
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-            <h1 className="text-3xl font-bold capitalize flex items-center gap-2">
-              {activeView} <span className="text-slate-600 text-lg font-normal">/ Dashboard</span>
+            <h1 className={`text-3xl font-black capitalize flex items-center gap-2 ${isUpsideDown ? 'text-white font-["Merriweather"]' : 'neo-text-shadow-sm text-[var(--color-neo-cream)]'}`} style={{ fontFamily: isUpsideDown ? 'Merriweather, serif' : 'var(--font-header)' }}>
+              {activeView} <span className={`text-lg font-normal ${isUpsideDown ? 'text-white/40 font-["Courier_Prime"]' : 'text-[var(--color-neo-cream)]/70'}`}>/ Dashboard</span>
             </h1>
             
             <div className="flex gap-3">
               {(activeView === 'users' || activeView === 'links') && (
-                <div className="relative w-full md:w-auto">
-                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
-                  <Input 
-                    placeholder={`Search ${activeView}...`} 
-                    className="pl-9 bg-slate-900 border-slate-700 w-full md:w-64"
-                    value={searchTerm}
-                    onChange={e => setSearchTerm(e.target.value)}
-                  />
-                </div>
+                <StrangerInput 
+                  placeholder={`Search ${activeView}...`} 
+                  className="w-full md:w-64"
+                  value={searchTerm}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+                  leftIcon={<Search className="h-4 w-4" />}
+                />
               )}
-              <Button variant="outline" size="icon" onClick={() => window.location.reload()} className="border-slate-700 shrink-0">
+              <StrangerButton variant="secondary" size="icon" onClick={() => window.location.reload()}>
                 <RefreshCw className="w-4 h-4" />
-              </Button>
+              </StrangerButton>
             </div>
           </div>
 
@@ -165,19 +168,19 @@ export default function AdminDashboard() {
           {/* 1. OVERVIEW */}
           {activeView === 'overview' && (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 animate-in fade-in slide-in-from-bottom-4">
-              <StatsCard title="Total Users" value={stats.totalUsers} icon={Users} color="text-blue-500" />
-              <StatsCard title="Total Links" value={stats.totalLinks} icon={Link2} color="text-green-500" />
-              <StatsCard title="Total Clicks" value={stats.totalClicks} icon={Eye} color="text-purple-500" />
-              <StatsCard title="Active Links" value={stats.activeLinks} icon={AlertTriangle} color="text-amber-500" />
+              <StatsCard title="Total Users" value={stats.totalUsers} icon={Users} color="text-blue-500" isUpsideDown={isUpsideDown} />
+              <StatsCard title="Total Links" value={stats.totalLinks} icon={Link2} color="text-green-500" isUpsideDown={isUpsideDown} />
+              <StatsCard title="Total Clicks" value={stats.totalClicks} icon={Eye} color="text-purple-500" isUpsideDown={isUpsideDown} />
+              <StatsCard title="Active Links" value={stats.activeLinks} icon={AlertTriangle} color="text-amber-500" isUpsideDown={isUpsideDown} />
             </div>
           )}
 
           {/* 2. USERS TABLE */}
           {activeView === 'users' && (
-            <div className="bg-slate-900 rounded-lg border border-slate-800 overflow-hidden animate-in fade-in">
+            <div className={`overflow-hidden animate-in fade-in ${isUpsideDown ? 'bg-[#111] border-2 border-[#E71D36] shadow-[6px_6px_0px_0px_#E71D36]' : 'bg-[var(--color-neo-cream)] border-2 border-[var(--color-neo-black)] rounded-lg'}`}>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
-                  <thead className="bg-slate-950/50 text-slate-500 border-b border-slate-800">
+                  <thead className={`border-b ${isUpsideDown ? 'bg-black text-[#E71D36] border-[#E71D36]/30 font-["Courier_Prime"]' : 'bg-[var(--color-neo-cream-dark)] text-[var(--color-neo-black)]/70 border-[var(--color-neo-black)]'}`}>
                     <tr>
                       <th className="p-4">Email</th>
                       <th className="p-4">User ID</th>
@@ -185,29 +188,25 @@ export default function AdminDashboard() {
                       <th className="p-4 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800">
+                  <tbody className={`divide-y ${isUpsideDown ? 'divide-[#E71D36]/10' : 'divide-[var(--color-neo-black)]/20'}`}>
                     {filteredUsers.map(u => (
-                      <tr key={u.uid} className="hover:bg-slate-800/50">
-                        <td className="p-4 font-medium text-slate-200">{u.email}</td>
-                        <td className="p-4 font-mono text-xs text-slate-500">{u.uid}</td>
-                        <td className="p-4 text-center"><span className="bg-slate-800 px-2 py-1 rounded">{u.linksCount || 0}</span></td>
+                      <tr key={u.uid} className={`${isUpsideDown ? 'hover:bg-[#E71D36]/5' : 'hover:bg-[var(--color-neo-cream-dark)]'}`}>
+                        <td className={`p-4 font-bold ${isUpsideDown ? 'text-white font-["Courier_Prime"]' : 'text-[var(--color-neo-black)]'}`}>{u.email}</td>
+                        <td className={`p-4 text-xs ${isUpsideDown ? 'text-white/30 font-["Courier_Prime"]' : 'font-mono text-[var(--color-neo-black)]/50'}`}>{u.uid}</td>
+                        <td className="p-4 text-center"><span className={`px-2 py-1 ${isUpsideDown ? 'bg-black border border-[#E71D36] text-[#E71D36] font-["Courier_Prime"]' : 'bg-[var(--color-neo-cream-dark)] border border-[var(--color-neo-black)] rounded'}`}>{u.linksCount || 0}</span></td>
                         <td className="p-4 text-right flex justify-end gap-2">
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          <button 
                             onClick={() => navigate(`/admin/user/${u.uid}`)} 
-                            className="text-blue-500 hover:bg-blue-900/20"
+                            className={`p-2 ${isUpsideDown ? 'text-[#E71D36] hover:bg-[#E71D36]/10 border border-transparent hover:border-[#E71D36]' : 'text-[var(--color-neo-black)] hover:bg-[var(--color-neo-cream-dark)] rounded'}`}
                           >
                             <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          </button>
+                          <button 
                             onClick={() => handleDeleteUser(u.uid)} 
-                            className="text-red-500 hover:bg-red-900/20"
+                            className={`p-2 ${isUpsideDown ? 'text-[#E71D36] hover:bg-[#E71D36]/10 border border-transparent hover:border-[#E71D36]' : 'text-[var(--color-neo-black)] hover:bg-[var(--color-neo-pink)] rounded'}`}
                           >
                             <Trash2 className="w-4 h-4" />
-                          </Button>
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -219,10 +218,10 @@ export default function AdminDashboard() {
 
           {/* 3. LINKS TABLE */}
           {activeView === 'links' && (
-            <div className="bg-slate-900 rounded-lg border border-slate-800 overflow-hidden animate-in fade-in">
+            <div className={`overflow-hidden animate-in fade-in ${isUpsideDown ? 'bg-[#111] border-2 border-[#E71D36] shadow-[6px_6px_0px_0px_#E71D36]' : 'bg-[var(--color-neo-cream)] border-2 border-[var(--color-neo-black)] rounded-lg'}`}>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
-                  <thead className="bg-slate-950/50 text-slate-500 border-b border-slate-800">
+                  <thead className={`border-b ${isUpsideDown ? 'bg-black text-[#E71D36] border-[#E71D36]/30 font-["Courier_Prime"]' : 'bg-[var(--color-neo-cream-dark)] text-[var(--color-neo-black)]/70 border-[var(--color-neo-black)]'}`}>
                     <tr>
                       <th className="p-4">Slug</th>
                       <th className="p-4">Destination</th>
@@ -231,34 +230,30 @@ export default function AdminDashboard() {
                       <th className="p-4 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800">
+                  <tbody className={`divide-y ${isUpsideDown ? 'divide-[#E71D36]/10' : 'divide-[var(--color-neo-black)]/20'}`}>
                     {filteredLinks.map(l => (
-                      <tr key={l._id} className="hover:bg-slate-800/50">
-                        <td className="p-4 font-mono text-red-400">/{l._id}</td>
-                        <td className="p-4 max-w-xs truncate text-slate-400">
-                          <a href={l.originalUrl} target="_blank" className="hover:text-white flex items-center gap-1">
+                      <tr key={l._id} className={`${isUpsideDown ? 'hover:bg-[#E71D36]/5' : 'hover:bg-[var(--color-neo-cream-dark)]'}`}>
+                        <td className={`p-4 font-bold ${isUpsideDown ? 'text-[#E71D36] font-["Courier_Prime"]' : 'font-mono text-[var(--color-neo-green-dark)]'}`}>/{l._id}</td>
+                        <td className={`p-4 max-w-xs truncate ${isUpsideDown ? 'text-white/60 font-["Courier_Prime"]' : 'text-[var(--color-neo-black)]/70'}`}>
+                          <a href={l.originalUrl} target="_blank" className={`flex items-center gap-1 ${isUpsideDown ? 'hover:text-white' : 'hover:text-[var(--color-neo-black)]'}`}>
                             {l.originalUrl} <ExternalLink className="w-3 h-3"/>
                           </a>
                         </td>
-                        <td className="p-4 text-slate-300">{l.ownerEmail || 'Guest'}</td>
-                        <td className="p-4 text-center font-bold">{l.clickCount}</td>
+                        <td className={`p-4 ${isUpsideDown ? 'text-white/70 font-["Courier_Prime"]' : 'text-[var(--color-neo-black)]'}`}>{l.ownerEmail || 'Guest'}</td>
+                        <td className={`p-4 text-center font-bold ${isUpsideDown ? 'text-white font-["Courier_Prime"]' : ''}`}>{l.clickCount}</td>
                         <td className="p-4 text-right flex justify-end gap-2">
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          <button 
                             onClick={() => navigate(`/admin/link/${l._id}`)} 
-                            className="text-blue-500 hover:bg-blue-900/20"
+                            className={`p-2 ${isUpsideDown ? 'text-[#E71D36] hover:bg-[#E71D36]/10 border border-transparent hover:border-[#E71D36]' : 'text-[var(--color-neo-black)] hover:bg-[var(--color-neo-cream-dark)] rounded'}`}
                           >
                             <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          </button>
+                          <button 
                             onClick={() => handleDeleteLink(l._id)} 
-                            className="text-red-500 hover:bg-red-900/20"
+                            className={`p-2 ${isUpsideDown ? 'text-[#E71D36] hover:bg-[#E71D36]/10 border border-transparent hover:border-[#E71D36]' : 'text-[var(--color-neo-black)] hover:bg-[var(--color-neo-pink)] rounded'}`}
                           >
                             <Trash2 className="w-4 h-4" />
-                          </Button>
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -270,13 +265,13 @@ export default function AdminDashboard() {
 
           {/* 4. LOGS TABLE */}
           {activeView === 'logs' && (
-            <div className="bg-slate-900 rounded-lg border border-slate-800 overflow-hidden animate-in fade-in">
+            <div className={`overflow-hidden animate-in fade-in ${isUpsideDown ? 'bg-[#111] border-2 border-[#E71D36] shadow-[6px_6px_0px_0px_#E71D36]' : 'bg-[var(--color-neo-cream)] border-2 border-[var(--color-neo-black)] rounded-lg'}`}>
               {loading ? (
-                <div className="p-12 text-center text-slate-500"><Loader2 className="w-8 h-8 animate-spin mx-auto mb-2"/> Loading Logs...</div>
+                <div className={`p-12 text-center ${isUpsideDown ? 'text-[#E71D36] font-["Courier_Prime"]' : 'text-[var(--color-neo-black)]/50'}`}><Loader2 className="w-8 h-8 animate-spin mx-auto mb-2"/> Loading Logs...</div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm text-left">
-                    <thead className="bg-slate-950/50 text-slate-500 border-b border-slate-800">
+                    <thead className={`border-b ${isUpsideDown ? 'bg-black text-[#E71D36] border-[#E71D36]/30 font-["Courier_Prime"]' : 'bg-[var(--color-neo-cream-dark)] text-[var(--color-neo-black)]/70 border-[var(--color-neo-black)]'}`}>
                       <tr>
                         <th className="p-4">Time</th>
                         <th className="p-4">Action</th>
@@ -285,27 +280,30 @@ export default function AdminDashboard() {
                         <th className="p-4 text-right">IP</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-800">
+                    <tbody className={`divide-y ${isUpsideDown ? 'divide-[#E71D36]/10' : 'divide-[var(--color-neo-black)]/20'}`}>
                       {logs.map(log => (
-                        <tr key={log._id} className="hover:bg-slate-800/50">
-                          <td className="p-4 font-mono text-xs text-slate-500 whitespace-nowrap">
+                        <tr key={log._id} className={`${isUpsideDown ? 'hover:bg-[#E71D36]/5' : 'hover:bg-[var(--color-neo-cream-dark)]'}`}>
+                          <td className={`p-4 text-xs whitespace-nowrap ${isUpsideDown ? 'text-white/40 font-["Courier_Prime"]' : 'font-mono text-[var(--color-neo-black)]/50'}`}>
                             {new Date(log.timestamp).toLocaleString()}
                           </td>
                           <td className="p-4">
-                            <span className={`px-2 py-1 rounded text-xs font-bold ${
-                              log.action.includes('DELETE') ? 'bg-red-900/20 text-red-400' : 
-                              log.action.includes('SCAN') ? 'bg-blue-900/20 text-blue-400' : 'bg-green-900/20 text-green-400'
+                            <span className={`px-2 py-1 text-xs font-bold ${
+                              log.action.includes('DELETE') 
+                                ? isUpsideDown ? 'bg-black border border-[#E71D36] text-[#E71D36]' : 'bg-red-200 text-red-700 border border-red-400 rounded'
+                                : log.action.includes('SCAN') 
+                                  ? isUpsideDown ? 'bg-black border border-[#E71D36] text-[#E71D36]' : 'bg-blue-200 text-blue-700 border border-blue-400 rounded'
+                                  : isUpsideDown ? 'bg-black border border-[#E71D36] text-[#E71D36]' : 'bg-green-200 text-green-700 border border-green-400 rounded'
                             }`}>
                               {log.action}
                             </span>
                           </td>
-                          <td className="p-4 text-slate-300">{log.performerEmail}</td>
-                          <td className="p-4 text-slate-400 max-w-md truncate" title={log.details}>{log.details}</td>
-                          <td className="p-4 text-right font-mono text-xs text-slate-500">{log.metadata?.ip || '-'}</td>
+                          <td className={`p-4 ${isUpsideDown ? 'text-white/70 font-["Courier_Prime"]' : 'text-[var(--color-neo-black)]'}`}>{log.performerEmail}</td>
+                          <td className={`p-4 max-w-md truncate ${isUpsideDown ? 'text-white/50 font-["Courier_Prime"]' : 'text-[var(--color-neo-black)]/70'}`} title={log.details}>{log.details}</td>
+                          <td className={`p-4 text-right text-xs ${isUpsideDown ? 'text-white/30 font-["Courier_Prime"]' : 'font-mono text-[var(--color-neo-black)]/50'}`}>{log.metadata?.ip || '-'}</td>
                         </tr>
                       ))}
                       {logs.length === 0 && (
-                        <tr><td colSpan={5} className="p-8 text-center text-slate-500">No logs found.</td></tr>
+                        <tr><td colSpan={5} className={`p-8 text-center ${isUpsideDown ? 'text-white/40 font-["Courier_Prime"]' : 'text-[var(--color-neo-black)]/50'}`}>No logs found.</td></tr>
                       )}
                     </tbody>
                   </table>
@@ -316,15 +314,19 @@ export default function AdminDashboard() {
 
           {/* 5. ANALYTICS (PLACEHOLDER) */}
           {activeView === 'analytics' && (
-            <div className="flex flex-col items-center justify-center h-96 border-2 border-dashed border-slate-800 rounded-lg bg-slate-900/50 animate-in zoom-in-95">
-              <div className="p-4 bg-slate-800 rounded-full mb-4">
-                <BarChart3 className="w-12 h-12 text-slate-400" />
+            <div className={`flex flex-col items-center justify-center h-96 border-2 border-dashed animate-in zoom-in-95 ${
+              isUpsideDown ? 'border-[#E71D36]/30 bg-[#111]' : 'border-[var(--color-neo-black)] bg-[var(--color-neo-cream-dark)] rounded-lg'
+            }`}>
+              <div className={`p-4 mb-4 ${isUpsideDown ? 'bg-black border-2 border-[#E71D36] shadow-[4px_4px_0px_0px_#E71D36]' : 'bg-[var(--color-neo-cream)] border-2 border-[var(--color-neo-black)] rounded-full'}`}>
+                <BarChart3 className={`w-12 h-12 ${isUpsideDown ? 'text-[#E71D36]' : 'text-[var(--color-neo-black)]'}`} />
               </div>
-              <h3 className="text-xl font-bold text-slate-300">Analytics Engine Offline</h3>
-              <p className="text-slate-500 mt-2 max-w-sm text-center">
+              <h3 className={`text-xl font-black ${isUpsideDown ? 'text-white font-["Merriweather"]' : 'text-[var(--color-neo-black)]'}`}>Analytics Engine Offline</h3>
+              <p className={`mt-2 max-w-sm text-center ${isUpsideDown ? 'text-white/50 font-["Courier_Prime"]' : 'text-[var(--color-neo-black)]/60'}`}>
                 Geographic data, traffic heatmaps, and threat analysis visualizations will be enabled in the next system update.
               </p>
-              <Button variant="outline" className="mt-6 border-slate-700" disabled>Coming Soon</Button>
+              <button disabled className={`mt-6 px-4 py-2 border-2 font-bold opacity-50 cursor-not-allowed ${
+                isUpsideDown ? 'border-[#E71D36]/30 text-[#E71D36]/50' : 'border-[var(--color-neo-black)] text-[var(--color-neo-black)] rounded-md'
+              }`}>Coming Soon</button>
             </div>
           )}
 
@@ -335,18 +337,18 @@ export default function AdminDashboard() {
 }
 
 // Stats Card Component
-function StatsCard({ title, value, icon: Icon, color }: any) {
+function StatsCard({ title, value, icon: Icon, color, isUpsideDown }: any) {
   return (
-    <Card className="bg-slate-900 border-slate-800">
-      <CardContent className="p-6 flex items-center gap-4">
-        <div className={`p-3 rounded-lg bg-slate-950 border border-slate-800 ${color}`}>
+    <div className={`border-2 ${isUpsideDown ? 'bg-[#111] border-[#E71D36] shadow-[4px_4px_0px_0px_#E71D36]' : 'bg-[var(--color-neo-cream)] border-[var(--color-neo-black)] rounded-lg'}`}>
+      <div className="p-6 flex items-center gap-4">
+        <div className={`p-3 border-2 ${isUpsideDown ? 'bg-black border-[#E71D36] text-[#E71D36]' : `bg-[var(--color-neo-cream-dark)] border-[var(--color-neo-black)] rounded-lg ${color}`}`}>
           <Icon className="w-6 h-6" />
         </div>
         <div>
-          <p className="text-2xl font-bold text-white">{value}</p>
-          <p className="text-sm text-slate-500">{title}</p>
+          <p className={`text-2xl font-black ${isUpsideDown ? 'text-white' : 'text-[var(--color-neo-black)]'}`}>{value}</p>
+          <p className={`text-sm ${isUpsideDown ? 'text-white/50 font-["Courier_Prime"]' : 'text-[var(--color-neo-black)]/60'}`}>{title}</p>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

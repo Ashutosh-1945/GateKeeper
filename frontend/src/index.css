@@ -4,117 +4,859 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
+  --color-neo-green: #538F37;
+  --color-neo-cream: #FFFFEE;
+  --color-neo-cream-dark: #E5E5C7;
+  --color-neo-pink: #FF90E8;
+  --color-neo-pink-dark: #D160BB;
+  --color-neo-black: #242622;
+  --color-neo-gray: #8C8C8C;
+  /* Hawkins Lab Dark Theme Colors */
+  --color-hawkins-black: #050505;
+  --color-hawkins-dark: #111111;
+  --color-hawkins-surface: #1a1a1a;
+  --color-hawkins-red: #E71D36;
+  --color-hawkins-red-dark: #8a1120;
+  --color-hawkins-gray: #333333;
+  --color-hawkins-text: #e4e4e7;
+  --color-hawkins-muted: #71717a;
+  /* Legacy gate colors for backward compat */
+  --color-gate-black: #050505;
+  --color-gate-dark: #111111;
+  --color-gate-surface: #1a1a1a;
+  --color-gate-red: #E71D36;
+  --color-gate-glow: #E71D36;
+  --color-gate-blood: #8a1120;
+  /* Fonts */
+  --font-header: "Merriweather", serif;
+  --font-body: "Courier Prime", monospace;
+  --font-display: "Inter", sans-serif;
+  --font-mono: "Courier Prime", monospace;
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --background: #538F37;
+  --foreground: #FFFFEE;
+  --card: #FFFFEE;
+  --card-foreground: #242622;
+  --primary: #FF90E8;
+  --primary-foreground: #242622;
+  --secondary: #E5E5C7;
+  --secondary-foreground: #242622;
+  --muted: #E5E5C7;
+  --muted-foreground: #242622;
+  --accent: #FF90E8;
+  --accent-foreground: #242622;
+  --destructive: #ef4444;
+  --border: #242622;
+  --input: #FFFFEE;
+  --ring: #FF90E8;
+  --radius: 24px;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: #050505;
+  --foreground: #e4e4e7;
+  --card: #111111;
+  --card-foreground: #e4e4e7;
+  --primary: #E71D36;
+  --primary-foreground: #000000;
+  --secondary: #1a1a1a;
+  --secondary-foreground: #e4e4e7;
+  --muted: #333333;
+  --muted-foreground: #71717a;
+  --accent: #E71D36;
+  --accent-foreground: #000000;
+  --destructive: #E71D36;
+  --border: #E71D36;
+  --input: #1a1a1a;
+  --ring: #E71D36;
+  --radius: 0.75rem;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes spore-float {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  50% { opacity: 0.8; }
+  100% { transform: translateY(-100vh) translateX(20px); opacity: 0; }
+}
+
+@keyframes blink { 
+  50% { opacity: 0; } 
+}
+
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.02); filter: brightness(1.2); }
+}
+
+@keyframes portal-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(231,29,54,0.4), 0 0 40px rgba(231,29,54,0.2); }
+  50% { box-shadow: 0 0 30px rgba(231,29,54,0.6), 0 0 60px rgba(231,29,54,0.3); }
+}
+
+@keyframes scan {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+  75% { opacity: 0.9; }
+}
+
+@layer utilities {
+  .animate-marquee {
+    animation: marquee 20s linear infinite;
+  }
+  
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .neo-btn {
+    position: relative;
+    height: 50px;
+    cursor: pointer;
+  }
+  
+  .neo-btn-shadow {
+    position: absolute;
+    top: 14px;
+    left: -1px;
+    width: calc(100% + 2px);
+    height: 100%;
+    background: var(--color-neo-gray);
+    border-radius: 7mm;
+    border: 2px solid var(--color-neo-black);
+    z-index: 1;
+  }
+  
+  .neo-btn-depth {
+    position: absolute;
+    top: 10px;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--color-neo-cream-dark);
+    border-radius: 7mm;
+    border: 2px solid var(--color-neo-black);
+    z-index: 2;
+  }
+  
+  .neo-btn-depth::before {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 15%;
+    width: 2px;
+    height: 9px;
+    background: var(--color-neo-black);
+  }
+  
+  .neo-btn-depth::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 85%;
+    width: 2px;
+    height: 9px;
+    background: var(--color-neo-black);
+  }
+  
+  .neo-btn-top {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: var(--color-neo-cream);
+    color: var(--color-neo-black);
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 7mm;
+    border: 2px solid var(--color-neo-black);
+    transition: transform 0.2s ease-out;
+    overflow: hidden;
+    outline: none;
+    z-index: 3;
+  }
+  
+  .neo-btn-top::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -20px;
+    width: 15px;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.1);
+    transform: skewX(-30deg);
+    transition: left 0.3s ease;
+  }
+  
+  .neo-btn:hover .neo-btn-top {
+    transform: translateY(-2px);
+  }
+  
+  .neo-btn:hover .neo-btn-top::before {
+    left: calc(100% + 20px);
+  }
+  
+  .neo-btn:active .neo-btn-top {
+    transform: translateY(10px);
+  }
+
+  .neo-btn-pink .neo-btn-depth {
+    background: var(--color-neo-pink-dark);
+  }
+  
+  .neo-btn-pink .neo-btn-top {
+    background: var(--color-neo-pink);
+  }
+  
+  .neo-btn-dark .neo-btn-depth {
+    background: #000000;
+  }
+  
+  .neo-btn-dark .neo-btn-shadow {
+    background: var(--color-neo-gray);
+  }
+  
+  .neo-btn-dark .neo-btn-top {
+    background: var(--color-neo-black);
+    color: var(--color-neo-cream);
+  }
+
+  .neo-card {
+    position: relative;
+  }
+  
+  .neo-card-shadow {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 100%;
+    height: 100%;
+    background: var(--color-neo-black);
+    border-radius: 24px;
+    border: 2px solid var(--color-neo-black);
+  }
+  
+  .neo-card-content {
+    position: relative;
+    background: var(--color-neo-cream);
+    border-radius: 24px;
+    border: 2px solid var(--color-neo-black);
+    padding: 32px;
+    transition: transform 0.2s ease;
+  }
+  
+  .neo-card:hover .neo-card-content {
+    transform: translate(-4px, -4px);
+  }
+
+  .neo-input-wrapper {
+    position: relative;
+    width: 100%;
+  }
+  
+  .neo-input-shadow {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 100%;
+    height: 100%;
+    background: var(--color-neo-gray);
+    border-radius: 7mm;
+    border: 2px solid var(--color-neo-black);
+  }
+  
+  .neo-input {
+    position: relative;
+    width: 100%;
+    height: 48px;
+    background: var(--color-neo-cream);
+    border-radius: 7mm;
+    border: 2px solid var(--color-neo-black);
+    padding: 0 24px;
+    font-family: var(--font-body);
+    font-size: 16px;
+    color: var(--color-neo-black);
+    outline: none;
+    transition: transform 0.2s ease;
+  }
+  
+  .neo-input::placeholder {
+    color: var(--color-neo-black);
+    opacity: 0.5;
+  }
+  
+  .neo-input:focus {
+    transform: translate(4px, 4px);
+  }
+
+  .neo-badge {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .neo-badge-shadow {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 100%;
+    height: 100%;
+    background: var(--color-neo-black);
+    border-radius: 8px;
+  }
+  
+  .neo-badge-content {
+    position: relative;
+    background: var(--color-neo-pink);
+    color: var(--color-neo-black);
+    padding: 4px 12px;
+    border-radius: 8px;
+    border: 2px solid var(--color-neo-black);
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .neo-logo {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .neo-logo-shadow {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 100%;
+    height: 100%;
+    background: var(--color-neo-black);
+    border-radius: 12px;
+    border: 2px solid var(--color-neo-black);
+  }
+  
+  .neo-logo-content {
+    position: relative;
+    background: var(--color-neo-cream);
+    padding: 8px 16px;
+    border-radius: 12px;
+    border: 2px solid var(--color-neo-black);
+    font-family: var(--font-header);
+    font-weight: 800;
+    font-size: 20px;
+    letter-spacing: -0.02em;
+    transition: transform 0.2s ease;
+  }
+  
+  .neo-logo:hover .neo-logo-content {
+    transform: translateY(-4px);
+  }
+
+  .neo-icon-box {
+    width: 48px;
+    height: 48px;
+    background: var(--color-neo-pink);
+    border-radius: 12px;
+    border: 2px solid var(--color-neo-black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 4px 4px 0px 0px var(--color-neo-black);
+  }
+
+  .neo-section {
+    position: relative;
+  }
+  
+  .neo-section-shadow {
+    position: absolute;
+    inset: 0;
+    background: var(--color-neo-black);
+    border-radius: 40px;
+    transform: rotate(2deg) translate(16px, 16px);
+  }
+  
+  .neo-section-content {
+    position: relative;
+    background: var(--color-neo-pink);
+    border-radius: 40px;
+    border: 2px solid var(--color-neo-black);
+    padding: 32px;
+    overflow: hidden;
+  }
+
+  .neo-text-shadow {
+    text-shadow: 6px 6px 0px var(--color-neo-black);
+  }
+  
+  .neo-text-shadow-sm {
+    text-shadow: 2px 2px 0px var(--color-neo-black);
+  }
+  
+  .neo-text-shadow-md {
+    text-shadow: 4px 4px 0px var(--color-neo-black);
+  }
+
+  /* Hawkins Dark Mode Text Shadows - White for contrast */
+  .hawkins-text-shadow {
+    text-shadow: 4px 4px 0px #fff;
+  }
+  
+  .hawkins-text-shadow-sm {
+    text-shadow: 2px 2px 0px #fff;
+  }
+
+  .card-upsidedown {
+    position: relative;
+    background-color: var(--color-hawkins-black);
+    border: 2px solid var(--color-hawkins-red);
+    border-radius: 12px;
+    transition: all 0.2s ease;
+  }
+  
+  .card-upsidedown::before {
+    content: "";
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    width: 100%;
+    height: 100%;
+    background: var(--color-hawkins-dark);
+    border: 2px solid var(--color-hawkins-gray);
+    border-radius: 12px;
+    z-index: -1;
+    transition: all 0.3s ease;
+  }
+  
+  .card-upsidedown:hover {
+    transform: translate(-8px, -8px);
+  }
+  
+  .card-upsidedown:hover::before {
+    background: var(--color-hawkins-red);
+    border-color: #000;
+  }
+  
+  /* Hawkins Lab 3D Brutalist Button */
+  .btn-hawkins {
+    position: relative;
+    height: 54px;
+    cursor: pointer;
+  }
+  
+  .btn-hawkins-shadow {
+    position: absolute;
+    top: 8px;
+    left: -1px;
+    width: calc(100% + 2px);
+    height: 100%;
+    background: #000;
+    border: 2px solid #000;
+    border-radius: 12px;
+    z-index: 1;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-hawkins:hover .btn-hawkins-shadow {
+    top: 12px;
+    left: 2px;
+  }
+  
+  .btn-hawkins-depth {
+    position: absolute;
+    top: 6px;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #8a1120;
+    border: 2px solid #000;
+    border-radius: 12px;
+    z-index: 2;
+  }
+  
+  .btn-hawkins-depth::before {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 20%;
+    width: 2px;
+    height: 8px;
+    background: rgba(0,0,0,0.5);
+  }
+  
+  .btn-hawkins-depth::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 80%;
+    width: 2px;
+    height: 8px;
+    background: rgba(0,0,0,0.5);
+  }
+  
+  .btn-hawkins-top {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: #E71D36;
+    color: #000;
+    font-family: 'Merriweather', serif;
+    font-weight: 900;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    border: 2px solid #000;
+    border-radius: 12px;
+    transition: all 0.15s ease-out;
+    overflow: hidden;
+    outline: none;
+    z-index: 3;
+  }
+  
+  /* CRT Scanline overlay on button */
+  .btn-hawkins-top::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.25) 50%), 
+                linear-gradient(90deg, rgba(255,0,0,0.06), rgba(0,255,0,0.02), rgba(0,0,255,0.06));
+    background-size: 100% 4px, 6px 100%;
+    pointer-events: none;
+  }
+  
+  .btn-hawkins:hover .btn-hawkins-top {
+    transform: translateY(-2px);
+  }
+  
+  .btn-hawkins:active .btn-hawkins-top {
+    transform: translateY(6px);
+  }
+  
+  /* Secondary variant (dark face with WHITE shadow for contrast) */
+  .btn-hawkins-secondary .btn-hawkins-shadow {
+    background: #fff;
+    border-color: #000;
+  }
+  
+  .btn-hawkins-secondary .btn-hawkins-depth {
+    background: #E71D36;
+    border-color: #000;
+  }
+  
+  .btn-hawkins-secondary .btn-hawkins-top {
+    background: #1a1a1a;
+    color: #E71D36;
+    border-color: #E71D36;
+  }
+
+  /* Hawkins Lab Card - Brutalist Style */
+  .card-hawkins {
+    position: relative;
+  }
+  
+  /* Red shadow - appears on hover */
+  .card-hawkins-shadow {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    width: 100%;
+    height: 100%;
+    background: #E71D36;
+    border: 2px solid #000;
+    border-radius: 12px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  /* Dark shadow - visible by default */
+  .card-hawkins::before {
+    content: "";
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    width: 100%;
+    height: 100%;
+    background: #111;
+    border: 2px solid #333;
+    border-radius: 12px;
+    transition: opacity 0.3s ease;
+  }
+  
+  .card-hawkins:hover .card-hawkins-shadow {
+    opacity: 1;
+  }
+  
+  .card-hawkins:hover::before {
+    opacity: 0;
+  }
+  
+  .card-hawkins-content {
+    position: relative;
+    background: #050505;
+    border: 2px solid #E71D36;
+    border-radius: 12px;
+    padding: 24px;
+    transition: transform 0.2s ease;
+    z-index: 10;
+  }
+  
+  .card-hawkins:hover .card-hawkins-content {
+    transform: translate(-8px, -8px);
+  }
+
+  /* Hawkins Lab Icon Box - with white shadow for contrast */
+  .icon-hawkins {
+    width: 40px;
+    height: 40px;
+    background: #E71D36;
+    border: 2px solid #000;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 2px 2px 0px #fff;
+  }
+
+  /* Hawkins Lab Input - Brutalist Style */
+  .input-hawkins-wrapper {
+    position: relative;
+    width: 100%;
+  }
+  
+  .input-hawkins-shadow {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 100%;
+    height: 100%;
+    background: #333;
+    border-radius: 0;
+  }
+  
+  .input-hawkins {
+    position: relative;
+    width: 100%;
+    height: 56px;
+    background: #000;
+    border: 2px solid #E71D36;
+    border-radius: 0;
+    padding: 0 16px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 14px;
+    color: #E71D36;
+    outline: none;
+    transition: all 0.2s ease;
+  }
+  
+  .input-hawkins::placeholder {
+    color: rgba(231, 29, 54, 0.3);
+    text-transform: uppercase;
+  }
+  
+  .input-hawkins:focus {
+    transform: translate(4px, 4px);
+    box-shadow: 0 0 20px rgba(231, 29, 54, 0.3);
+  }
+
+  /* Hawkins Lab Logo - Brutalist Style with white shadow */
+  .logo-hawkins {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+  }
+  
+  .logo-hawkins-shadow {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    border: 1px solid #000;
+    border-radius: 4px;
+  }
+  
+  .logo-hawkins-content {
+    position: relative;
+    background: #000;
+    padding: 8px 16px;
+    border: 1px solid #E71D36;
+    border-radius: 4px;
+    font-family: 'Merriweather', serif;
+    font-weight: 900;
+    font-size: 20px;
+    color: #fff;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    transition: transform 0.2s ease;
+  }
+  
+  .logo-hawkins:hover .logo-hawkins-content {
+    transform: translate(-4px, -4px);
+  }
+
+  /* Hawkins Lab Badge - Status indicator */
+  .badge-hawkins {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 9999px;
+    padding: 8px 16px;
+  }
+  
+  .badge-hawkins-dot {
+    width: 8px;
+    height: 8px;
+    background: #E71D36;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #E71D36;
+    animation: heartbeat 2s ease-in-out infinite;
+  }
+  
+  .badge-hawkins-text {
+    font-family: 'Courier Prime', monospace;
+    font-weight: 700;
+    font-size: 12px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+  }
+
+  /* CRT Scanlines effect */
+  .crt-scanlines {
+    position: relative;
+  }
+  
+  .crt-scanlines::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.25) 50%),
+                linear-gradient(90deg, rgba(255,0,0,0.06), rgba(0,255,0,0.02), rgba(0,0,255,0.06));
+    background-size: 100% 4px, 6px 100%;
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  /* Grid overlay */
+  .hawkins-grid {
+    background-image: linear-gradient(var(--color-hawkins-red) 1px, transparent 1px),
+                      linear-gradient(90deg, var(--color-hawkins-red) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.2;
+  }
+
+  /* Legacy classes - keep for backward compat */
+  .btn-upsidedown {
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border: 2px solid var(--color-hawkins-red);
+    border-radius: 12px;
+    background: var(--color-hawkins-dark);
+    color: var(--color-hawkins-red);
+    transition: all 0.3s ease;
+  }
+  
+  .btn-upsidedown:hover {
+    background: var(--color-hawkins-red);
+    color: #000;
+    box-shadow: 0 0 25px rgba(231,29,54,0.5);
+  }
+  
+  .text-vein {
+    color: var(--color-hawkins-red);
+    text-shadow: 2px 2px 0px #000;
+  }
+  
+  .logo-upsidedown {
+    color: var(--color-hawkins-red);
+    text-shadow: 4px 4px 0px #fff;
+  }
+  
+  .rift-glow {
+    box-shadow: 0 0 20px var(--color-hawkins-red), 0 0 40px rgba(231,29,54,0.5);
+    animation: portal-glow 3s ease-in-out infinite;
+  }
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    border-color: var(--border);
   }
+  
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-body);
+    transition: background-color 0.5s ease, color 0.3s ease;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  ::-webkit-scrollbar { 
+    width: 12px; 
+    height: 12px; 
+  }
+  
+  ::-webkit-scrollbar-track { 
+    background: var(--color-neo-cream); 
+    border: 2px solid var(--color-neo-black); 
+  }
+  
+  ::-webkit-scrollbar-thumb { 
+    background: var(--color-neo-pink); 
+    border: 2px solid var(--color-neo-black); 
+    border-radius: 0;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-neo-pink-dark);
+  }
+  
+  .dark ::-webkit-scrollbar-track { 
+    background: var(--color-gate-black); 
+    border: 1px solid rgba(239, 68, 68, 0.2); 
+  }
+  
+  .dark ::-webkit-scrollbar-thumb { 
+    background: linear-gradient(180deg, var(--color-gate-red), var(--color-gate-blood)); 
+    border: 1px solid rgba(239, 68, 68, 0.4); 
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.3); 
+  }
+  
+  ::selection { 
+    background: var(--color-neo-pink); 
+    color: var(--color-neo-black); 
+  }
+  
+  .dark ::selection { 
+    background: var(--color-gate-red); 
+    color: white; 
   }
 }

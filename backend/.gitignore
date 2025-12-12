@@ -1,1 +1,29 @@
+# Environment variables
 .env
+.env.local
+.env.production
+
+# Firebase Service Account (NEVER COMMIT)
+serviceAccountKey.json
+*serviceAccountKey*.json
+firebase-adminsdk*.json
+
+# Dependencies
+node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Build
+dist/
+build/

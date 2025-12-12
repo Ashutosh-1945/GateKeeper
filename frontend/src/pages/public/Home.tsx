@@ -6,14 +6,17 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { StrangerButton } from "@/components/ui/StrangerButton";
+import { StrangerCard, StrangerCardHeader, StrangerCardTitle, StrangerCardContent, StrangerCardFooter } from "@/components/ui/StrangerCard";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/ui/common/Navbar";
 import { api } from "@/services/api";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 
 export default function Home() {
   const { user } = useAuth();
+  const { isUpsideDown } = useTheme();
   const [url, setUrl] = useState("");
   const [shortLink, setShortLink] = useState("");
   const [loading, setLoading] = useState(false);
@@ -109,43 +112,65 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-red-900 selection:text-white">
+    <div className="min-h-screen flex flex-col">
 
       <Navbar /> 
 
       {/* ================= HERO SECTION ================= */}
       <section className="flex-1 flex flex-col items-center justify-center p-4 pt-32 pb-20 relative overflow-hidden">
         
-        {/* Background Ambient Glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-64 bg-red-900/10 blur-[100px] rounded-full pointer-events-none" />
-
         <div className="text-center mb-10 max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-700 relative z-10">
           <div className="flex justify-center mb-4">
-            <div className="p-3 bg-red-950/30 rounded-full border border-red-900/50 shadow-[0_0_15px_rgba(220,38,38,0.3)]">
-              <ShieldAlert className="w-12 h-12 text-red-600" />
-            </div>
+            {isUpsideDown ? (
+              <div className="relative">
+                <div className="absolute inset-0 bg-[#E71D36] translate-x-2 translate-y-2" />
+                <div className="relative bg-black border-2 border-[#E71D36] p-3">
+                  <ShieldAlert className="w-10 h-10 text-[#E71D36]" />
+                </div>
+              </div>
+            ) : (
+              <div className="neo-icon-box w-16 h-16">
+                <ShieldAlert className="w-8 h-8 text-[var(--color-neo-black)]" />
+              </div>
+            )}
           </div>
-          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-4">
-            Deadman<span className="text-red-600">Link</span>
+          <h1 
+            className={`text-4xl md:text-6xl font-black tracking-tight mb-4 ${
+              isUpsideDown 
+                ? "text-white" 
+                : "text-[var(--color-neo-cream)]"
+            }`}
+            style={{ 
+              fontFamily: isUpsideDown ? "Merriweather, serif" : "var(--font-header)",
+              textShadow: isUpsideDown ? "none" : "6px 6px 0px var(--color-neo-pink)"
+            }}
+          >
+            Gate<span 
+              className={isUpsideDown ? "text-[#E71D36]" : "text-[var(--color-neo-black)]"}
+              style={{ textShadow: isUpsideDown ? "none" : "6px 6px 0px var(--color-neo-cream)" }}
+            >Keeper</span>
           </h1>
-          <p className="text-slate-400 text-lg">
+          <p 
+            className={`text-lg ${isUpsideDown ? "text-white/70 font-['Courier_Prime']" : "text-[var(--color-neo-cream)]"}`}
+            style={{ fontFamily: isUpsideDown ? "Courier Prime, monospace" : "var(--font-body)" }}
+          >
             Generate secure, ephemeral links. <br className="hidden md:block" />
             Share secrets that vanish when threats are detected.
           </p>
         </div>
 
         {/* Main Action Card */}
-        <Card className="w-full max-w-md bg-slate-900/80 backdrop-blur-sm border-slate-800 shadow-2xl shadow-red-900/10 animate-in zoom-in-95 duration-500 relative z-10">
-          <CardHeader>
-            <CardTitle className="text-slate-200 flex items-center gap-2 text-lg">
-              <Zap className="h-5 w-5 text-yellow-500" />
+        <StrangerCard className="w-full max-w-md relative z-10">
+          <StrangerCardHeader>
+            <StrangerCardTitle className="flex items-center gap-2 text-lg">
+              <Zap className="h-5 w-5 text-[var(--color-neo-pink)] dark:text-yellow-500" />
               {user ? "Agent Mode" : "Quick Shorten"} 
-              <span className="text-slate-500 text-sm font-normal ml-auto">
+              <span className="opacity-60 text-sm font-normal ml-auto">
                 {user ? `(${user.email?.split('@')[0]})` : "(Guest Mode)"}
               </span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+            </StrangerCardTitle>
+          </StrangerCardHeader>
+          <StrangerCardContent>
             {!shortLink ? (
               <form onSubmit={handleShorten} className="space-y-4">
                 <div className="relative group">
@@ -319,18 +344,18 @@ export default function Home() {
                 </Button>
               </div>
             )}
-          </CardContent>
-          <CardFooter className="bg-slate-950/50 border-t border-slate-800 p-4 text-xs text-slate-500 flex justify-between items-center rounded-b-xl">
+          </StrangerCardContent>
+          <StrangerCardFooter className="text-xs flex justify-between items-center">
             <span className="flex items-center gap-1">
               <Lock className="h-3 w-3" /> TLS Encryption
             </span>
             {!user && (
-              <Link to="/login" className="text-red-500 hover:text-red-400 flex items-center gap-1 transition-colors group font-semibold">
+              <Link to="/login" className="text-[var(--color-neo-pink)] hover:text-[var(--color-neo-pink-dark)] dark:text-red-500 dark:hover:text-red-400 flex items-center gap-1 transition-colors group font-semibold">
                 Unlock Password Protection <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
               </Link>
             )}
-          </CardFooter>
-        </Card>
+          </StrangerCardFooter>
+        </StrangerCard>
 
         {/* Scroll Indicator */}
         <div className="absolute bottom-8 animate-bounce text-slate-600">
@@ -339,81 +364,145 @@ export default function Home() {
       </section>
 
       {/* ================= FEATURES SECTION ================= */}
-      <section className="py-24 bg-slate-900 border-t border-slate-800">
+      <section className={`py-24 border-t-2 ${
+        isUpsideDown 
+          ? "bg-[#050505] border-[#E71D36]" 
+          : "bg-[var(--color-neo-cream)] border-[var(--color-neo-black)]"
+      }`}>
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-slate-100">Why Go Dark?</h2>
-            <p className="text-slate-400 mt-2">Standard links leave traces. Deadman links disappear.</p>
+            <h2 className={`text-3xl font-black ${isUpsideDown ? "text-white font-['Merriweather']" : "text-[var(--color-neo-black)] neo-text-shadow-sm"}`} style={{ fontFamily: isUpsideDown ? "Merriweather, serif" : "var(--font-header)" }}>
+              Why Go Dark?
+            </h2>
+            <p className={`mt-2 font-['Courier_Prime'] ${isUpsideDown ? "text-white/60" : "text-[var(--color-neo-black)] opacity-70"}`}>
+              Standard links leave traces. Deadman links disappear.
+            </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 hover:border-red-900/50 transition-all hover:-translate-y-1 group">
-              <div className="w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center mb-4 group-hover:bg-red-900/20 transition-colors">
-                <Bomb className="w-6 h-6 text-slate-300 group-hover:text-red-500" />
+            {/* Feature Card 1 */}
+            <div className={`neo-card ${isUpsideDown ? "!rounded-none" : ""}`}>
+              {!isUpsideDown && <div className="neo-card-shadow" />}
+              <div className={`${
+                isUpsideDown 
+                  ? "relative p-6 bg-[#111] border-2 border-[#E71D36] shadow-[6px_6px_0px_0px_#E71D36] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[8px_8px_0px_0px_#E71D36] transition-all group" 
+                  : "neo-card-content group hover:translate-x-[-4px] hover:translate-y-[-4px]"
+              }`}>
+                <div className={`w-12 h-12 flex items-center justify-center mb-4 ${
+                  isUpsideDown 
+                    ? "bg-black border-2 border-[#E71D36] shadow-[3px_3px_0px_0px_#E71D36] group-hover:shadow-[4px_4px_0px_0px_#E71D36] transition-all" 
+                    : "bg-[var(--color-neo-pink)] border-2 border-[var(--color-neo-black)] shadow-[4px_4px_0px_0px_var(--color-neo-black)] rounded-lg"
+                }`}>
+                  <Bomb className={`w-6 h-6 ${isUpsideDown ? "text-[#E71D36]" : "text-[var(--color-neo-black)]"}`} />
+                </div>
+                <h3 className={`text-xl font-black mb-2 ${isUpsideDown ? "text-white font-['Merriweather']" : "text-[var(--color-neo-black)]"}`}>Self-Destruction</h3>
+                <p className={`leading-relaxed ${isUpsideDown ? "text-white/60 font-['Courier_Prime']" : "text-[var(--color-neo-black)] opacity-70"}`}>
+                  Set links to auto-delete after a specific time or a single click. 
+                  Ensure your data exists only as long as it needs to.
+                </p>
               </div>
-              <h3 className="text-xl font-semibold mb-2 text-slate-200">Self-Destruction</h3>
-              <p className="text-slate-400 leading-relaxed">
-                Set links to auto-delete after a specific time or a single click. 
-                Ensure your data exists only as long as it needs to.
-              </p>
             </div>
 
-            <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 hover:border-red-900/50 transition-all hover:-translate-y-1 group">
-              <div className="w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center mb-4 group-hover:bg-red-900/20 transition-colors">
-                <Ghost className="w-6 h-6 text-slate-300 group-hover:text-red-500" />
+            {/* Feature Card 2 */}
+            <div className={`neo-card ${isUpsideDown ? "!rounded-none" : ""}`}>
+              {!isUpsideDown && <div className="neo-card-shadow" />}
+              <div className={`${
+                isUpsideDown 
+                  ? "relative p-6 bg-[#111] border-2 border-[#E71D36] shadow-[6px_6px_0px_0px_#E71D36] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[8px_8px_0px_0px_#E71D36] transition-all group" 
+                  : "neo-card-content group hover:translate-x-[-4px] hover:translate-y-[-4px]"
+              }`}>
+                <div className={`w-12 h-12 flex items-center justify-center mb-4 ${
+                  isUpsideDown 
+                    ? "bg-black border-2 border-[#E71D36] shadow-[3px_3px_0px_0px_#E71D36] group-hover:shadow-[4px_4px_0px_0px_#E71D36] transition-all" 
+                    : "bg-[var(--color-neo-pink)] border-2 border-[var(--color-neo-black)] shadow-[4px_4px_0px_0px_var(--color-neo-black)] rounded-lg"
+                }`}>
+                  <Ghost className={`w-6 h-6 ${isUpsideDown ? "text-[#E71D36]" : "text-[var(--color-neo-black)]"}`} />
+                </div>
+                <h3 className={`text-xl font-black mb-2 ${isUpsideDown ? "text-white font-['Merriweather']" : "text-[var(--color-neo-black)]"}`}>Total Anonymity</h3>
+                <p className={`leading-relaxed ${isUpsideDown ? "text-white/60 font-['Courier_Prime']" : "text-[var(--color-neo-black)] opacity-70"}`}>
+                  No tracking cookies. No user logs for guest links. 
+                  We act as a blind relay between you and the destination.
+                </p>
               </div>
-              <h3 className="text-xl font-semibold mb-2 text-slate-200">Total Anonymity</h3>
-              <p className="text-slate-400 leading-relaxed">
-                No tracking cookies. No user logs for guest links. 
-                We act as a blind relay between you and the destination.
-              </p>
             </div>
 
-            <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 hover:border-red-900/50 transition-all hover:-translate-y-1 group">
-              <div className="w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center mb-4 group-hover:bg-red-900/20 transition-colors">
-                <Fingerprint className="w-6 h-6 text-slate-300 group-hover:text-red-500" />
+            {/* Feature Card 3 */}
+            <div className={`neo-card ${isUpsideDown ? "!rounded-none" : ""}`}>
+              {!isUpsideDown && <div className="neo-card-shadow" />}
+              <div className={`${
+                isUpsideDown 
+                  ? "relative p-6 bg-[#111] border-2 border-[#E71D36] shadow-[6px_6px_0px_0px_#E71D36] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[8px_8px_0px_0px_#E71D36] transition-all group" 
+                  : "neo-card-content group hover:translate-x-[-4px] hover:translate-y-[-4px]"
+              }`}>
+                <div className={`w-12 h-12 flex items-center justify-center mb-4 ${
+                  isUpsideDown 
+                    ? "bg-black border-2 border-[#E71D36] shadow-[3px_3px_0px_0px_#E71D36] group-hover:shadow-[4px_4px_0px_0px_#E71D36] transition-all" 
+                    : "bg-[var(--color-neo-pink)] border-2 border-[var(--color-neo-black)] shadow-[4px_4px_0px_0px_var(--color-neo-black)] rounded-lg"
+                }`}>
+                  <Fingerprint className={`w-6 h-6 ${isUpsideDown ? "text-[#E71D36]" : "text-[var(--color-neo-black)]"}`} />
+                </div>
+                <h3 className={`text-xl font-black mb-2 ${isUpsideDown ? "text-white font-['Merriweather']" : "text-[var(--color-neo-black)]"}`}>Threat Intelligence</h3>
+                <p className={`leading-relaxed ${isUpsideDown ? "text-white/60 font-['Courier_Prime']" : "text-[var(--color-neo-black)] opacity-70"}`}>
+                  Our AI scans destinations for malware. 
+                  If a link becomes suspicious, we kill it instantly to protect the network.
+                </p>
               </div>
-              <h3 className="text-xl font-semibold mb-2 text-slate-200">Threat Intelligence</h3>
-              <p className="text-slate-400 leading-relaxed">
-                Our AI scans destinations for malware. 
-                If a link becomes suspicious, we kill it instantly to protect the network.
-              </p>
             </div>
           </div>
         </div>
       </section>
 
       {/* ================= MISSION PROTOCOL ================= */}
-      <section className="py-24 bg-slate-950 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20" />
+      <section className={`py-24 relative overflow-hidden ${
+        isUpsideDown ? "bg-black" : "bg-[var(--color-neo-green)]"
+      }`}>
+        {isUpsideDown && (
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#E71D36_1px,transparent_1px),linear-gradient(to_bottom,#E71D36_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-10" />
+        )}
         <div className="max-w-4xl mx-auto px-6 relative z-10">
           <div className="text-center mb-16">
-            <span className="text-red-500 font-mono text-sm tracking-widest uppercase">Protocol Alpha</span>
-            <h2 className="text-3xl font-bold text-slate-100 mt-2">Mission Protocol</h2>
+            <span className={`font-['Courier_Prime'] text-sm tracking-widest uppercase ${
+              isUpsideDown ? "text-[#E71D36]" : "text-[var(--color-neo-pink)]"
+            }`}>Protocol Alpha</span>
+            <h2 className={`text-3xl font-black mt-2 ${
+              isUpsideDown ? "text-white font-['Merriweather']" : "text-[var(--color-neo-cream)] neo-text-shadow-sm"
+            }`} style={{ fontFamily: isUpsideDown ? "Merriweather, serif" : "var(--font-header)" }}>Mission Protocol</h2>
           </div>
 
           <div className="space-y-8">
             <div className="flex items-start gap-4 md:gap-8">
-              <div className="flex-none w-8 h-8 md:w-12 md:h-12 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 font-bold">1</div>
+              <div className={`flex-none w-8 h-8 md:w-12 md:h-12 flex items-center justify-center font-black ${
+                isUpsideDown 
+                  ? "bg-black border-2 border-[#E71D36] shadow-[3px_3px_0px_0px_#E71D36] text-[#E71D36]" 
+                  : "bg-[var(--color-neo-cream)] border-2 border-[var(--color-neo-black)] text-[var(--color-neo-black)] shadow-[4px_4px_0px_0px_var(--color-neo-black)] rounded-full"
+              }`}>1</div>
               <div>
-                <h4 className="text-lg md:text-xl font-bold text-white">Target Acquisition</h4>
-                <p className="text-slate-400 mt-1">Paste your URL. Our system generates a unique, encrypted slug instantly.</p>
+                <h4 className={`text-lg md:text-xl font-black ${isUpsideDown ? "text-white font-['Merriweather']" : "text-[var(--color-neo-cream)]"}`}>Target Acquisition</h4>
+                <p className={`mt-1 ${isUpsideDown ? "text-white/60 font-['Courier_Prime']" : "text-[var(--color-neo-cream)] opacity-80"}`}>Paste your URL. Our system generates a unique, encrypted slug instantly.</p>
               </div>
             </div>
-             <div className="w-0.5 h-8 bg-slate-800 ml-4 md:ml-6 my-2"></div>
+            <div className={`w-0.5 h-8 ml-4 md:ml-6 my-2 ${isUpsideDown ? "bg-[#E71D36]/30" : "bg-[var(--color-neo-black)]"}`}></div>
             <div className="flex items-start gap-4 md:gap-8">
-              <div className="flex-none w-8 h-8 md:w-12 md:h-12 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 font-bold">2</div>
+              <div className={`flex-none w-8 h-8 md:w-12 md:h-12 flex items-center justify-center font-black ${
+                isUpsideDown 
+                  ? "bg-black border-2 border-[#E71D36] shadow-[3px_3px_0px_0px_#E71D36] text-[#E71D36]" 
+                  : "bg-[var(--color-neo-cream)] border-2 border-[var(--color-neo-black)] text-[var(--color-neo-black)] shadow-[4px_4px_0px_0px_var(--color-neo-black)] rounded-full"
+              }`}>2</div>
               <div>
-                <h4 className="text-lg md:text-xl font-bold text-white">Set Parameters</h4>
-                <p className="text-slate-400 mt-1">Configure optional expiration triggers. (Login required for password protection).</p>
+                <h4 className={`text-lg md:text-xl font-black ${isUpsideDown ? "text-white font-['Merriweather']" : "text-[var(--color-neo-cream)]"}`}>Set Parameters</h4>
+                <p className={`mt-1 ${isUpsideDown ? "text-white/60 font-['Courier_Prime']" : "text-[var(--color-neo-cream)] opacity-80"}`}>Configure optional expiration triggers. (Login required for password protection).</p>
               </div>
             </div>
-            <div className="w-0.5 h-8 bg-slate-800 ml-4 md:ml-6 my-2"></div>
+            <div className={`w-0.5 h-8 ml-4 md:ml-6 my-2 ${isUpsideDown ? "bg-[#E71D36]/30" : "bg-[var(--color-neo-black)]"}`}></div>
             <div className="flex items-start gap-4 md:gap-8">
-              <div className="flex-none w-8 h-8 md:w-12 md:h-12 rounded-full bg-red-900/30 border border-red-900 text-red-500 flex items-center justify-center font-bold">3</div>
+              <div className={`flex-none w-8 h-8 md:w-12 md:h-12 flex items-center justify-center font-black ${
+                isUpsideDown 
+                  ? "bg-[#E71D36] border-2 border-[#E71D36] text-black" 
+                  : "bg-[var(--color-neo-pink)] border-2 border-[var(--color-neo-black)] text-[var(--color-neo-black)] shadow-[4px_4px_0px_0px_var(--color-neo-black)] rounded-full"
+              }`}>3</div>
               <div>
-                <h4 className="text-lg md:text-xl font-bold text-white">Detonation</h4>
-                <p className="text-slate-400 mt-1">Once the criteria are met (time or clicks), the link is permanently scrubbed from the database.</p>
+                <h4 className={`text-lg md:text-xl font-black ${isUpsideDown ? "text-white font-['Merriweather']" : "text-[var(--color-neo-cream)]"}`}>Detonation</h4>
+                <p className={`mt-1 ${isUpsideDown ? "text-white/60 font-['Courier_Prime']" : "text-[var(--color-neo-cream)] opacity-80"}`}>Once the criteria are met (time or clicks), the link is permanently scrubbed from the database.</p>
               </div>
             </div>
           </div>
@@ -421,35 +510,43 @@ export default function Home() {
       </section>
 
       {/* ================= FINAL CTA ================= */}
-      <section className="py-20 bg-gradient-to-t from-red-950/20 to-slate-900 border-t border-slate-800 text-center px-4">
+      <section className={`py-20 text-center px-4 border-t-2 ${
+        isUpsideDown 
+          ? "bg-[#111] border-[#E71D36]" 
+          : "bg-[var(--color-neo-pink)] border-[var(--color-neo-black)]"
+      }`}>
         {user ? (
           <>
-            <h2 className="text-3xl font-bold text-white mb-6">Welcome Back, Agent</h2>
-            <p className="text-slate-400 max-w-lg mx-auto mb-8">
+            <h2 className={`text-3xl font-black mb-6 ${isUpsideDown ? "text-white font-['Merriweather']" : "text-[var(--color-neo-black)]"}`} style={{ fontFamily: isUpsideDown ? "Merriweather, serif" : "var(--font-header)" }}>
+              Welcome Back, Agent
+            </h2>
+            <p className={`max-w-lg mx-auto mb-8 ${isUpsideDown ? "text-white/60 font-['Courier_Prime']" : "text-[var(--color-neo-black)] opacity-80"}`}>
               Manage your links, track analytics, and configure advanced security from your dashboard.
             </p>
             <Link to="/dashboard">
-              <Button size="lg" className="bg-red-600 hover:bg-red-700 text-white font-bold">
+              <StrangerButton size="lg">
                 Go to Dashboard
-              </Button>
+              </StrangerButton>
             </Link>
           </>
         ) : (
           <>
-            <h2 className="text-3xl font-bold text-white mb-6">Join the Network</h2>
-            <p className="text-slate-400 max-w-lg mx-auto mb-8">
+            <h2 className={`text-3xl font-black mb-6 ${isUpsideDown ? "text-white font-['Merriweather']" : "text-[var(--color-neo-black)]"}`} style={{ fontFamily: isUpsideDown ? "Merriweather, serif" : "var(--font-header)" }}>
+              Join the Network
+            </h2>
+            <p className={`max-w-lg mx-auto mb-8 ${isUpsideDown ? "text-white/60 font-['Courier_Prime']" : "text-[var(--color-neo-black)] opacity-80"}`}>
               Unlock advanced features like password protection, custom slugs, and click tracking analytics.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/login">
-                <Button size="lg" className="w-full sm:w-auto bg-white text-slate-950 hover:bg-slate-200 font-bold">
+                <StrangerButton size="lg">
                   Access Dashboard
-                </Button>
+                </StrangerButton>
               </Link>
               <Link to="/register">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800">
+                <StrangerButton size="lg" variant="secondary">
                   Create Agent ID
-                </Button>
+                </StrangerButton>
               </Link>
             </div>
           </>
@@ -457,7 +554,11 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 bg-slate-950 text-center text-slate-600 text-sm border-t border-slate-900">
+      <footer className={`py-8 text-center text-sm border-t-2 ${
+        isUpsideDown 
+          ? "bg-black text-white/40 border-[#E71D36]/30 font-['Courier_Prime']" 
+          : "bg-[var(--color-neo-cream)] text-[var(--color-neo-black)] border-[var(--color-neo-black)]"
+      }`}>
         <p>© 2025 Deadman Link. Encrypted & Secured.</p>
       </footer>
     </div>
